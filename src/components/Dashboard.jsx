@@ -2015,9 +2015,6 @@ export default function Dashboard({ onCompile, initialData }) {
           <a href="#" className="flex items-center gap-1.5 text-sm font-semibold text-white/90 hover:text-white pb-1 border-b-2 border-purple-500 transition-colors">
             <i className="fa-solid fa-house text-[11px]"></i> Home
           </a>
-          <button className="text-sm font-semibold text-gray-400 hover:text-white transition-colors">
-            Sign In
-          </button>
         </div>
       </motion.nav>
 
