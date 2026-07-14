@@ -1,0 +1,2927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Engine Studio Pro — Custom UX Portfolio Engine</title>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  
+  <!-- Google Fonts for the 5 Themes -->
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- PDF.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+
+  <style>
+    /* ==========================================================================
+       DASHBOARD STYLING
+       ========================================================================== */
+    :root {
+      --dash-bg: #070913;
+      --dash-card: #0d1224;
+      --dash-accent: #00e5ff;
+      --dash-accent-hover: #00b0ff;
+      --dash-text: #94a3b8;
+      --dash-border: rgba(255, 255, 255, 0.08);
+      --dash-transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Set body default to dashboard style, will be customized inside portfolio themes */
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--dash-bg);
+      color: #f8fafc;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    #dashboardView {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 3rem 1.5rem;
+    }
+
+    .dash-container {
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .dash-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .dash-header h1 {
+      font-size: 2.75rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin-bottom: 0.5rem;
+    }
+
+    .dash-header h1 span {
+      background: linear-gradient(135deg, var(--dash-accent) 30%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .dash-header p {
+      color: var(--dash-text);
+      font-size: 1rem;
+    }
+
+    .dash-card {
+      background: var(--dash-card);
+      border: 1px solid var(--dash-border);
+      border-radius: 24px;
+      padding: 2.5rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .form-section-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--dash-accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+    }
+
+    .form-section-title:first-of-type {
+      margin-top: 0;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--dash-text);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    input[type="text"], select, textarea {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--dash-border);
+      border-radius: 12px;
+      padding: 0.9rem 1.2rem;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: var(--dash-transition);
+    }
+
+    input[type="text"]:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--dash-accent);
+      box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.15);
+      background: rgba(0, 0, 0, 0.45);
+    }
+
+    textarea {
+      height: 100px;
+      resize: vertical;
+    }
+
+    /* Style the file uploader */
+    .file-upload-wrapper {
+      position: relative;
+      border: 2px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--dash-transition);
+    }
+
+    .file-upload-wrapper:hover {
+      border-color: var(--dash-accent);
+      background: rgba(0, 229, 255, 0.03);
+    }
+
+    .file-upload-wrapper input[type="file"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .file-upload-wrapper i {
+      font-size: 2rem;
+      color: var(--dash-accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .file-upload-wrapper p {
+      font-size: 0.9rem;
+      color: var(--dash-text);
+    }
+
+    .dash-btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      background: var(--dash-accent);
+      color: #000;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: none;
+      padding: 1.1rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: var(--dash-transition);
+    }
+
+    .dash-btn:hover {
+      background: var(--dash-accent-hover);
+      transform: translateY(-1px);
+    }
+
+    #resultBox {
+      margin-top: 1.5rem;
+      display: none;
+      background: rgba(0, 229, 255, 0.05);
+      border: 1px dashed var(--dash-accent);
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .link-url {
+      display: block;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 8px;
+      padding: 0.9rem;
+      margin: 1rem 0;
+      color: var(--dash-accent);
+      font-family: monospace;
+      font-size: 0.85rem;
+      word-break: break-all;
+    }
+
+    #portfolioView {
+      display: none;
+      width: 100%;
+    }
+
+    .theme-container {
+      display: none;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    .active-theme {
+      display: block;
+    }
+
+    /* ==========================================================================
+       THEME 1: NOVA DEV (Futuristic Dark Cyber)
+       ========================================================================== */
+    .theme-novadev {
+      background-color: #060913;
+      color: #e2e8f0;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    .theme-novadev nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 5%;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .theme-novadev nav .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .theme-novadev nav .logo span {
+      color: #00e5ff;
+    }
+
+    .theme-novadev nav .links a {
+      color: #94a3b8;
+      text-decoration: none;
+      margin-left: 2rem;
+      font-size: 0.95rem;
+      transition: color 0.3s;
+    }
+
+    .theme-novadev nav .links a:hover {
+      color: #00e5ff;
+    }
+
+    .theme-novadev nav .hire-btn {
+      border: 1px solid #00e5ff;
+      color: #00e5ff;
+      padding: 0.5rem 1.25rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.1);
+    }
+
+    .theme-novadev nav .hire-btn:hover {
+      background: #00e5ff;
+      color: #000;
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+    }
+
+    .theme-novadev .hero {
+      text-align: center;
+      padding: 5rem 1rem 3rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .theme-novadev .avatar-wrap {
+      position: relative;
+      width: 150px;
+      height: 150px;
+      margin: 0 auto 2rem;
+    }
+
+    .theme-novadev .avatar-wrap img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #00e5ff;
+      box-shadow: 0 0 25px rgba(0, 229, 255, 0.2);
+    }
+
+    .theme-novadev .status-pill {
+      display: inline-block;
+      background: rgba(167, 139, 250, 0.15);
+      border: 1px solid rgba(167, 139, 250, 0.3);
+      color: #c084fc;
+      padding: 0.3rem 1rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+    }
+
+    .theme-novadev .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #00e5ff 30%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .theme-novadev .hero p {
+      font-size: 1.15rem;
+      color: #94a3b8;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+
+    .theme-novadev .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+    }
+
+    .theme-novadev .btn-primary {
+      background: transparent;
+      border: 1px solid #00e5ff;
+      color: #00e5ff;
+      padding: 0.8rem 2rem;
+      border-radius: 50px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s;
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.1);
+    }
+
+    .theme-novadev .btn-primary:hover {
+      background: #00e5ff;
+      color: #000;
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+    }
+
+    .theme-novadev .btn-secondary {
+      color: #94a3b8;
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.8rem;
+    }
+
+    .theme-novadev .btn-secondary:hover {
+      color: #fff;
+    }
+
+    .theme-novadev .stats-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      max-width: 1000px;
+      margin: 2rem auto 5rem;
+      background: #0d1224;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 2rem 0;
+      text-align: center;
+    }
+
+    .theme-novadev .stat-card {
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .theme-novadev .stat-card:last-child {
+      border-right: none;
+    }
+
+    .theme-novadev .stat-card h3 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #00e5ff;
+      margin-bottom: 0.5rem;
+    }
+
+    .theme-novadev .stat-card p {
+      font-size: 0.9rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .theme-novadev .section {
+      padding: 5rem 5%;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .theme-novadev .section-label {
+      color: #a78bfa;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+
+    .theme-novadev .section-title {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 3rem;
+      color: #fff;
+    }
+
+    .theme-novadev .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+
+    .theme-novadev .project-card {
+      background: #0d1224;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .theme-novadev .project-card:hover {
+      transform: translateY(-5px);
+      border-color: #00e5ff;
+      box-shadow: 0 10px 25px rgba(0, 229, 255, 0.05);
+    }
+
+    .theme-novadev .project-image {
+      height: 200px;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .theme-novadev .project-info {
+      padding: 1.5rem;
+    }
+
+    .theme-novadev .project-info h4 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.75rem;
+    }
+
+    .theme-novadev .project-info p {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      margin-bottom: 1.25rem;
+      line-height: 1.6;
+    }
+
+    .theme-novadev .project-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .theme-novadev .project-tag {
+      background: rgba(0, 229, 255, 0.08);
+      color: #00e5ff;
+      border: 1px solid rgba(0, 229, 255, 0.15);
+      padding: 0.2rem 0.6rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+    }
+
+    .theme-novadev .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 1rem;
+    }
+
+    .theme-novadev .tech-card {
+      background: #0d1224;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .theme-novadev .tech-card:hover {
+      border-color: #a78bfa;
+      box-shadow: 0 8px 20px rgba(167, 139, 250, 0.05);
+    }
+
+    .theme-novadev .tech-card i {
+      font-size: 1.8rem;
+      color: #00e5ff;
+      margin-bottom: 0.75rem;
+    }
+
+    .theme-novadev .tech-card p {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+
+    .theme-novadev .timeline {
+      position: relative;
+      padding-left: 2rem;
+      border-left: 2px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .theme-novadev .timeline-item {
+      position: relative;
+      margin-bottom: 3rem;
+    }
+
+    .theme-novadev .timeline-node {
+      position: absolute;
+      left: calc(-2rem - 6px);
+      top: 0.25rem;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #00e5ff;
+      box-shadow: 0 0 10px #00e5ff;
+    }
+
+    .theme-novadev .timeline-item:nth-child(even) .timeline-node {
+      background: #a78bfa;
+      box-shadow: 0 0 10px #a78bfa;
+    }
+
+    .theme-novadev .timeline-year {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #00e5ff;
+      margin-bottom: 0.5rem;
+    }
+
+    .theme-novadev .timeline-item:nth-child(even) .timeline-year {
+      color: #a78bfa;
+    }
+
+    .theme-novadev .timeline-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .theme-novadev .timeline-desc {
+      font-size: 0.95rem;
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+
+    .theme-novadev .contact-card {
+      background: #0d1224;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 24px;
+      padding: 3rem;
+    }
+
+    .theme-novadev .contact-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .theme-novadev .form-control {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 0.9rem 1.2rem;
+      color: #fff;
+      font-family: inherit;
+      width: 100%;
+      transition: all 0.3s;
+    }
+
+    .theme-novadev .form-control:focus {
+      outline: none;
+      border-color: #00e5ff;
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.1);
+    }
+
+    .theme-novadev textarea.form-control {
+      height: 120px;
+    }
+
+    .theme-novadev .submit-btn {
+      width: 100%;
+      background: transparent;
+      border: 1px solid #00e5ff;
+      color: #00e5ff;
+      font-weight: 700;
+      padding: 1.1rem;
+      border-radius: 12px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: all 0.3s;
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.1);
+    }
+
+    .theme-novadev .submit-btn:hover {
+      background: #00e5ff;
+      color: #000;
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+    }
+
+    .theme-novadev footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 3rem 5%;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      margin-top: 5rem;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+
+    .theme-novadev .footer-socials a {
+      color: #64748b;
+      margin-left: 1.5rem;
+      font-size: 1.1rem;
+      transition: color 0.3s;
+    }
+
+    .theme-novadev .footer-socials a:hover {
+      color: #00e5ff;
+    }
+
+    /* ==========================================================================
+       THEME 2: EDITORIAL/LUXURY (Serif Warm Editorial)
+       ========================================================================== */
+    .theme-editorial {
+      background-color: #faf6f0;
+      color: #2e2520;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .theme-editorial h1,
+    .theme-editorial h2,
+    .theme-editorial h3,
+    .theme-editorial h4 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+    }
+
+    .theme-editorial nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2rem 8%;
+      border-bottom: 1px solid rgba(46, 37, 32, 0.08);
+    }
+
+    .theme-editorial nav .logo {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .theme-editorial nav .links a {
+      color: #2e2520;
+      opacity: 0.8;
+      text-decoration: none;
+      margin-left: 2.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .theme-editorial nav .links a:hover {
+      opacity: 1;
+    }
+
+    .theme-editorial nav .hire-btn {
+      background: #b54708;
+      color: #fff;
+      padding: 0.6rem 1.5rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+
+    .theme-editorial nav .hire-btn:hover {
+      background: #963804;
+    }
+
+    .theme-editorial .hero {
+      text-align: center;
+      padding: 8rem 2rem 5rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .theme-editorial .hero-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: #b54708;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .theme-editorial .hero h1 {
+      font-size: 4rem;
+      line-height: 1.15;
+      margin-bottom: 2rem;
+      font-style: italic;
+    }
+
+    .theme-editorial .hero-actions {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+
+    .theme-editorial .btn-primary {
+      background: #b54708;
+      color: #fff;
+      padding: 0.9rem 2.2rem;
+      border-radius: 50px;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: background 0.3s;
+    }
+
+    .theme-editorial .btn-primary:hover {
+      background: #963804;
+    }
+
+    .theme-editorial .btn-secondary {
+      color: #2e2520;
+      text-decoration: underline;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .theme-editorial .philosophy-sec {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+      padding: 5rem 8%;
+      border-top: 1px solid rgba(46, 37, 32, 0.08);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .theme-editorial .philosophy-img {
+      width: 100%;
+      border-radius: 16px;
+      object-fit: cover;
+      aspect-ratio: 4/3;
+    }
+
+    .theme-editorial .philosophy-content h3 {
+      font-size: 2rem;
+      line-height: 1.3;
+      margin-bottom: 1.5rem;
+      font-style: italic;
+      color: #b54708;
+    }
+
+    .theme-editorial .philosophy-content p {
+      font-size: 1rem;
+      line-height: 1.8;
+      opacity: 0.8;
+      margin-bottom: 1.5rem;
+    }
+
+    .theme-editorial .philosophy-content a {
+      color: #b54708;
+    }
+
+    .theme-editorial .section {
+      padding: 6rem 8%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .theme-editorial .section-title {
+      font-size: 2.5rem;
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    /* Mosaic Masonry Gallery */
+    .theme-editorial .mosaic-gallery {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-auto-rows: 240px;
+      gap: 1.5rem;
+    }
+
+    .theme-editorial .gallery-item {
+      background-size: cover;
+      background-position: center;
+      border-radius: 12px;
+    }
+
+    .theme-editorial .gallery-item.tall {
+      grid-row: span 2;
+    }
+
+    .theme-editorial .gallery-item.wide {
+      grid-column: span 2;
+    }
+
+    /* Process section */
+    .theme-editorial .process-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2.5rem;
+      margin-top: 3rem;
+    }
+
+    .theme-editorial .process-card {
+      text-align: center;
+    }
+
+    .theme-editorial .process-num {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      width: 50px;
+      height: 50px;
+      background: #b54708;
+      color: #fff;
+      border-radius: 50%;
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .theme-editorial .process-card h4 {
+      font-size: 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .theme-editorial .process-card p {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      opacity: 0.8;
+    }
+
+    /* Testimonials section */
+    .theme-editorial .testimonials-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+    }
+
+    .theme-editorial .testimonial-card {
+      background: rgba(46, 37, 32, 0.03);
+      border-radius: 16px;
+      padding: 3rem;
+      border: 1px solid rgba(46, 37, 32, 0.05);
+    }
+
+    .theme-editorial .testimonial-card h4 {
+      font-size: 1.5rem;
+      line-height: 1.5;
+      font-style: italic;
+      margin-bottom: 2rem;
+      font-weight: 400;
+    }
+
+    .theme-editorial .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .theme-editorial .testimonial-author img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .theme-editorial .author-info h5 {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .theme-editorial .author-info p {
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+
+    .theme-editorial footer {
+      background: #2e2520;
+      color: #fffdf9;
+      padding: 5rem 8% 3rem;
+      margin-top: 6rem;
+    }
+
+    .theme-editorial footer .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 4rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 4rem;
+      margin-bottom: 3rem;
+    }
+
+    .theme-editorial footer .footer-brand h3 {
+      font-size: 1.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .theme-editorial footer .footer-brand p {
+      font-size: 0.95rem;
+      opacity: 0.6;
+      line-height: 1.6;
+    }
+
+    .theme-editorial footer .footer-links h4 {
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 1.5rem;
+    }
+
+    .theme-editorial footer .footer-links ul {
+      list-style: none;
+    }
+
+    .theme-editorial footer .footer-links ul li {
+      margin-bottom: 0.75rem;
+    }
+
+    .theme-editorial footer .footer-links ul li a {
+      color: #fffdf9;
+      opacity: 0.7;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: opacity 0.3s;
+    }
+
+    .theme-editorial footer .footer-links ul li a:hover {
+      opacity: 1;
+    }
+
+    .theme-editorial footer .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      opacity: 0.6;
+    }
+
+    /* ==========================================================================
+       THEME 3: ALEX MINIMALIST (Black & White Ultra-Minimal)
+       ========================================================================== */
+    .theme-minimal {
+      background-color: #ffffff;
+      color: #000000;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .theme-minimal h1,
+    .theme-minimal h2,
+    .theme-minimal h3,
+    .theme-minimal h4 {
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+    }
+
+    .theme-minimal nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2rem 5%;
+    }
+
+    .theme-minimal nav .logo {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .theme-minimal nav .links a {
+      color: #000;
+      text-decoration: none;
+      margin-left: 2rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .theme-minimal nav .links a:hover {
+      text-decoration: underline;
+    }
+
+    .theme-minimal .hero {
+      padding: 6rem 5% 4rem;
+      max-width: 900px;
+    }
+
+    .theme-minimal .hero-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      margin-bottom: 1.5rem;
+      display: block;
+      color: #666;
+    }
+
+    .theme-minimal .hero h1 {
+      font-size: 4.5rem;
+      line-height: 1.1;
+      margin-bottom: 2rem;
+      letter-spacing: -0.02em;
+    }
+
+    .theme-minimal .hero p {
+      font-size: 1.25rem;
+      line-height: 1.7;
+      margin-bottom: 3rem;
+      opacity: 0.8;
+      max-width: 700px;
+    }
+
+    .theme-minimal .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 1rem;
+      background: transparent;
+      border: 1px solid #000;
+      color: #000;
+      padding: 0.9rem 2.2rem;
+      border-radius: 50px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.85rem;
+      text-decoration: none;
+      transition: all 0.3s;
+    }
+
+    .theme-minimal .btn-primary:hover {
+      background: #000;
+      color: #fff;
+    }
+
+    /* Marquee Banner */
+    .theme-minimal .marquee-banner {
+      background: #000;
+      color: #fff;
+      padding: 1.25rem 0;
+      margin: 4rem 0;
+      overflow: hidden;
+      display: flex;
+    }
+
+    .theme-minimal .marquee-track {
+      display: flex;
+      white-space: nowrap;
+      animation: runMinimalMarquee 20s linear infinite;
+    }
+
+    .theme-minimal .marquee-track span {
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-right: 4rem;
+    }
+
+    @keyframes runMinimalMarquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .theme-minimal .about-sec {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      padding: 4rem 5%;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .theme-minimal .about-img-wrap {
+      position: relative;
+    }
+
+    .theme-minimal .about-img-wrap img {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1/1;
+      object-fit: cover;
+    }
+
+    .theme-minimal .about-img-overlay {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 50%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-left: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .theme-minimal .about-content h3 {
+      font-size: 2.25rem;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.01em;
+    }
+
+    .theme-minimal .about-content p {
+      font-size: 1rem;
+      line-height: 1.7;
+      opacity: 0.7;
+      margin-bottom: 2.5rem;
+    }
+
+    .theme-minimal .metrics-row {
+      display: flex;
+      gap: 3rem;
+      border-top: 1px solid #eee;
+      padding-top: 2rem;
+    }
+
+    .theme-minimal .metric-col h3 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .theme-minimal .metric-col p {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      opacity: 0.5;
+    }
+
+    .theme-minimal .section {
+      padding: 5rem 5%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .theme-minimal .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 4rem;
+      border-bottom: 1px solid #000;
+      padding-bottom: 1rem;
+    }
+
+    .theme-minimal .section-title {
+      font-size: 2.25rem;
+      margin-bottom: 0;
+    }
+
+    .theme-minimal .section-meta {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      opacity: 0.5;
+    }
+
+    .theme-minimal .works-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+
+    .theme-minimal .work-card {
+      text-decoration: none;
+      color: #000;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .theme-minimal .work-img {
+      width: 100%;
+      aspect-ratio: 4/5;
+      object-fit: cover;
+      margin-bottom: 1rem;
+      filter: grayscale(100%);
+      transition: filter 0.3s;
+    }
+
+    .theme-minimal .work-card:hover .work-img {
+      filter: grayscale(0%);
+    }
+
+    .theme-minimal .work-meta {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      opacity: 0.5;
+      margin-bottom: 0.5rem;
+    }
+
+    .theme-minimal .work-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .theme-minimal .view-all-card {
+      background: #000;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      aspect-ratio: 4/5;
+      padding: 2rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+
+    .theme-minimal .view-all-card:hover {
+      background: #222;
+    }
+
+    .theme-minimal .view-all-card h4 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .theme-minimal .view-all-card i {
+      font-size: 1.5rem;
+    }
+
+    .theme-minimal .services-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .theme-minimal .service-row {
+      display: grid;
+      grid-template-columns: 0.5fr 2fr 3fr;
+      padding: 2.5rem 0;
+      border-bottom: 1px solid #eee;
+      align-items: center;
+    }
+
+    .theme-minimal .service-num {
+      font-size: 1.25rem;
+      opacity: 0.4;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .theme-minimal .service-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .theme-minimal .service-desc {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      opacity: 0.7;
+    }
+
+    .theme-minimal footer {
+      background: #000;
+      color: #fff;
+      text-align: center;
+      padding: 6rem 2rem 4rem;
+    }
+
+    .theme-minimal footer p {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      opacity: 0.5;
+      margin-bottom: 1.5rem;
+    }
+
+    .theme-minimal footer h2 {
+      font-size: 3rem;
+      margin-bottom: 3rem;
+      letter-spacing: -0.01em;
+    }
+
+    .theme-minimal footer h2 a {
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .theme-minimal .footer-socials {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+
+    .theme-minimal .footer-socials a {
+      color: #fff;
+      opacity: 0.5;
+      font-size: 1.5rem;
+      transition: opacity 0.3s;
+    }
+
+    .theme-minimal .footer-socials a:hover {
+      opacity: 1;
+    }
+
+    .theme-minimal .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      max-width: 1100px;
+      margin: 0 auto;
+      border-top: 1px solid #222;
+      padding-top: 2rem;
+      font-size: 0.85rem;
+      opacity: 0.4;
+    }
+
+    /* ==========================================================================
+       THEME 4: NEO-BRUTALIST (High-Contrast Bold Yellow)
+       ========================================================================== */
+    .theme-brutalist {
+      background-color: #ffffff;
+      color: #000000;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .theme-brutalist nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 5%;
+      border-bottom: 3px solid #000;
+    }
+
+    .theme-brutalist nav .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+    }
+
+    .theme-brutalist nav .links a {
+      color: #000;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-left: 2rem;
+      text-transform: uppercase;
+    }
+
+    .theme-brutalist nav .links a:hover {
+      text-decoration: underline;
+    }
+
+    .theme-brutalist .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 3rem;
+      align-items: center;
+      padding: 6rem 5%;
+      border-bottom: 3px solid #000;
+    }
+
+    .theme-brutalist .hero-content h1 {
+      font-size: 5rem;
+      font-weight: 800;
+      line-height: 0.95;
+      text-transform: uppercase;
+      letter-spacing: -0.03em;
+      margin-bottom: 2rem;
+    }
+
+    .theme-brutalist .hero-content p {
+      font-size: 1.25rem;
+      line-height: 1.6;
+      font-weight: 500;
+      margin-bottom: 2.5rem;
+    }
+
+    .theme-brutalist .hero-actions {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .theme-brutalist .btn-primary {
+      background: #facc15;
+      color: #000;
+      border: 3px solid #000;
+      box-shadow: 4px 4px 0px #000;
+      padding: 0.9rem 2.2rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: all 0.15s ease-in-out;
+    }
+
+    .theme-brutalist .btn-primary:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px #000;
+    }
+
+    .theme-brutalist .btn-primary:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px #000;
+    }
+
+    .theme-brutalist .btn-secondary {
+      background: #fff;
+      color: #000;
+      border: 3px solid #000;
+      box-shadow: 4px 4px 0px #000;
+      padding: 0.9rem 2.2rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: all 0.15s ease-in-out;
+    }
+
+    .theme-brutalist .btn-secondary:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px #000;
+    }
+
+    .theme-brutalist .hero-accent-block {
+      background: #facc15;
+      border: 3px solid #000;
+      height: 350px;
+      box-shadow: 8px 8px 0px #000;
+    }
+
+    .theme-brutalist .section {
+      padding: 6rem 5%;
+      border-bottom: 3px solid #000;
+    }
+
+    .theme-brutalist .section-meta {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .theme-brutalist .section-title {
+      font-size: 3rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      margin-bottom: 4rem;
+    }
+
+    /* Brutalist list work */
+    .theme-brutalist .works-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .theme-brutalist .work-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2rem 1.5rem;
+      border-top: 3px solid #000;
+      text-decoration: none;
+      color: #000;
+      transition: background 0.2s;
+    }
+
+    .theme-brutalist .work-row:last-child {
+      border-bottom: 3px solid #000;
+    }
+
+    .theme-brutalist .work-row:hover {
+      background: #facc15;
+    }
+
+    .theme-brutalist .work-num-title {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .theme-brutalist .work-row-num {
+      font-size: 1.25rem;
+      font-weight: 500;
+      opacity: 0.5;
+    }
+
+    .theme-brutalist .work-row-title {
+      font-size: 2rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .theme-brutalist .work-row-btn {
+      background: #fff;
+      border: 3px solid #000;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.25rem;
+      box-shadow: 3px 3px 0px #000;
+    }
+
+    .theme-brutalist .about-sec {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .theme-brutalist .about-img-box {
+      border: 3px solid #000;
+      box-shadow: 8px 8px 0px #facc15;
+      overflow: hidden;
+      aspect-ratio: 1/1;
+    }
+
+    .theme-brutalist .about-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(100%);
+    }
+
+    .theme-brutalist .about-content h3 {
+      font-size: 2.75rem;
+      font-weight: 800;
+      line-height: 1.1;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+
+    .theme-brutalist .about-content p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 2.5rem;
+    }
+
+    .theme-brutalist .metrics-row {
+      display: flex;
+      gap: 3rem;
+    }
+
+    .theme-brutalist .metric-col h4 {
+      font-size: 3rem;
+      font-weight: 800;
+      margin-bottom: 0.25rem;
+    }
+
+    .theme-brutalist .metric-col p {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      opacity: 0.6;
+    }
+
+    .theme-brutalist .tags-flex {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .theme-brutalist .tag-bubble {
+      border: 3px solid #000;
+      padding: 0.6rem 1.2rem;
+      border-radius: 50px;
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+    }
+
+    .theme-brutalist .tag-bubble.yellow {
+      background: #facc15;
+    }
+
+    .theme-brutalist .tag-bubble.black {
+      background: #000;
+      color: #fff;
+    }
+
+    .theme-brutalist .contact-heading {
+      font-size: 4rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #facc15;
+      text-shadow: 2px 2px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 2px 0px #000;
+      margin-bottom: 3rem;
+    }
+
+    .theme-brutalist .contact-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .theme-brutalist .form-control {
+      border: 3px solid #000;
+      padding: 1rem;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      width: 100%;
+      box-shadow: 4px 4px 0px #000;
+    }
+
+    .theme-brutalist textarea.form-control {
+      height: 120px;
+    }
+
+    .theme-brutalist .submit-btn {
+      width: 100%;
+      background: #facc15;
+      border: 3px solid #000;
+      padding: 1.1rem;
+      font-weight: 800;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 4px 4px 0px #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.15s;
+    }
+
+    .theme-brutalist .submit-btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px #000;
+    }
+
+    .theme-brutalist footer {
+      background: #000;
+      color: #fff;
+      padding: 4rem 5%;
+    }
+
+    .theme-brutalist footer .footer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #333;
+      padding-bottom: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .theme-brutalist footer .footer-links a {
+      color: #fff;
+      text-decoration: none;
+      margin-left: 1.5rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+    }
+
+    .theme-brutalist footer .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      opacity: 0.5;
+    }
+
+    /* ==========================================================================
+       THEME 5: STUDIO POP (Playful Pastel Bento Grid)
+       ========================================================================== */
+    .theme-pop {
+      background-color: #fffdf5;
+      color: #2e263d;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .theme-pop nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 5%;
+    }
+
+    .theme-pop nav .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #fb7185;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .theme-pop nav .logo i {
+      font-size: 1.25rem;
+    }
+
+    .theme-pop nav .links a {
+      color: #2e263d;
+      text-decoration: none;
+      font-weight: 700;
+      margin-left: 2rem;
+      font-size: 0.9rem;
+    }
+
+    .theme-pop nav .links a:hover {
+      color: #fb7185;
+    }
+
+    .theme-pop nav .hire-btn {
+      background: #2dd4bf;
+      color: #fff;
+      border: 2px solid #2e263d;
+      box-shadow: 3px 3px 0px #2e263d;
+      padding: 0.5rem 1.5rem;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .theme-pop nav .hire-btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0px #2e263d;
+    }
+
+    .theme-pop .hero {
+      padding: 4rem 5%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .theme-pop .hero-bento {
+      border: 3px dashed #cbd5e1;
+      border-radius: 32px;
+      padding: 3rem;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 4rem;
+      align-items: center;
+      background: #fff;
+    }
+
+    .theme-pop .hero-content .label {
+      background: #e9e3ff;
+      color: #7c3aed;
+      border: 2px solid #2e263d;
+      padding: 0.3rem 1rem;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      display: inline-block;
+      margin-bottom: 1.5rem;
+    }
+
+    .theme-pop .hero-content h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 1.5rem;
+      color: #fb7185;
+    }
+
+    .theme-pop .hero-content p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 2.5rem;
+      color: #64748b;
+    }
+
+    .theme-pop .hero-actions {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .theme-pop .btn-primary {
+      background: #2dd4bf;
+      color: #fff;
+      border: 2px solid #2e263d;
+      box-shadow: 4px 4px 0px #2e263d;
+      padding: 0.8rem 2rem;
+      border-radius: 50px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .theme-pop .btn-primary:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px #2e263d;
+    }
+
+    .theme-pop .btn-secondary {
+      background: #fff;
+      color: #2e263d;
+      border: 2px solid #cbd5e1;
+      padding: 0.8rem 2rem;
+      border-radius: 50px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .theme-pop .btn-secondary:hover {
+      border-color: #2e263d;
+    }
+
+    .theme-pop .hero-visual {
+      background: linear-gradient(135deg, #e9e3ff 0%, #cbd5e1 100%);
+      border: 2px solid #2e263d;
+      box-shadow: 6px 6px 0px #2e263d;
+      border-radius: 24px;
+      height: 320px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .theme-pop .hero-visual::before {
+      content: "★";
+      position: absolute;
+      font-size: 6rem;
+      color: rgba(255, 255, 255, 0.4);
+      top: 20%;
+      left: 30%;
+    }
+
+    /* Colored Ribbon Bar */
+    .theme-pop .ribbon-bar {
+      display: flex;
+      margin: 4rem 0;
+      border-top: 2px solid #2e263d;
+      border-bottom: 2px solid #2e263d;
+    }
+
+    .theme-pop .ribbon-item {
+      flex: 1;
+      text-align: center;
+      padding: 1rem 0;
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      color: #fff;
+      border-right: 2px solid #2e263d;
+    }
+
+    .theme-pop .ribbon-item:last-child {
+      border-right: none;
+    }
+
+    .theme-pop .ribbon-item.coral { background: #fb7185; }
+    .theme-pop .ribbon-item.yellow { background: #fef08a; color: #2e263d; }
+    .theme-pop .ribbon-item.teal { background: #2dd4bf; }
+    .theme-pop .ribbon-item.purple { background: #c084fc; }
+    .theme-pop .ribbon-item.red { background: #f87171; }
+
+    .theme-pop .section {
+      padding: 5rem 5%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .theme-pop .section-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 4rem;
+      color: #2e263d;
+    }
+
+    .theme-pop .section-title span {
+      position: relative;
+    }
+
+    .theme-pop .section-title span::after {
+      content: "";
+      position: absolute;
+      bottom: -6px;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: #fef08a;
+      z-index: -1;
+    }
+
+    /* About Bento Box */
+    .theme-pop .about-bento {
+      background: #e9e3ff;
+      border: 2px solid #2e263d;
+      box-shadow: 6px 6px 0px #2e263d;
+      border-radius: 24px;
+      padding: 3rem;
+      display: grid;
+      grid-template-columns: 0.4fr 1.6fr;
+      gap: 3rem;
+      align-items: center;
+    }
+
+    .theme-pop .about-avatar-card {
+      background: #fff;
+      border: 2px solid #2e263d;
+      border-radius: 20px;
+      padding: 1rem;
+      box-shadow: 4px 4px 0px #2e263d;
+      text-align: center;
+    }
+
+    .theme-pop .about-avatar-card img {
+      width: 100%;
+      border-radius: 12px;
+      aspect-ratio: 1/1;
+      object-fit: cover;
+      margin-bottom: 0.75rem;
+    }
+
+    .theme-pop .about-avatar-card h5 {
+      font-size: 0.95rem;
+      font-weight: 800;
+    }
+
+    .theme-pop .about-content h3 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+
+    .theme-pop .about-content ul {
+      list-style: none;
+    }
+
+    .theme-pop .about-content ul li {
+      position: relative;
+      padding-left: 2rem;
+      margin-bottom: 1rem;
+      font-weight: 500;
+      font-size: 1.05rem;
+    }
+
+    .theme-pop .about-content ul li::before {
+      content: "🌈";
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+
+    /* Bubbly project cards */
+    .theme-pop .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2.5rem;
+    }
+
+    .theme-pop .project-card {
+      border: 2px solid #2e263d;
+      border-radius: 24px;
+      background: #fff;
+      overflow: hidden;
+      box-shadow: 6px 6px 0px #2e263d;
+      transition: all 0.2s;
+    }
+
+    .theme-pop .project-card:hover {
+      transform: translate(-3px, -3px);
+      box-shadow: 9px 9px 0px #2e263d;
+    }
+
+    .theme-pop .project-image {
+      height: 200px;
+      background-size: cover;
+      background-position: center;
+      border-bottom: 2px solid #2e263d;
+    }
+
+    .theme-pop .project-info {
+      padding: 1.5rem;
+    }
+
+    .theme-pop .project-tag-pill {
+      display: inline-block;
+      background: #fecdd3;
+      color: #e11d48;
+      border: 1px solid rgba(225, 29, 72, 0.15);
+      padding: 0.2rem 0.8rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+
+    .theme-pop .project-card:nth-child(2) .project-tag-pill {
+      background: #ccfbf1;
+      color: #0d9488;
+    }
+
+    .theme-pop .project-card:nth-child(3) .project-tag-pill {
+      background: #fef9c3;
+      color: #ca8a04;
+    }
+
+    .theme-pop .project-info h4 {
+      font-size: 1.3rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+
+    .theme-pop .project-info p {
+      font-size: 0.9rem;
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    /* Circular charts */
+    .theme-pop .charts-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+      text-align: center;
+      margin-top: 4rem;
+    }
+
+    .theme-pop .chart-box {
+      background: #fff;
+      border: 2px solid #2e263d;
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 4px 4px 0px #2e263d;
+    }
+
+    .theme-pop .donut-ring {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .theme-pop .donut-ring svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .theme-pop .donut-ring circle {
+      fill: none;
+      stroke-width: 8;
+    }
+
+    .theme-pop .donut-ring .bg {
+      stroke: #f1f5f9;
+    }
+
+    .theme-pop .donut-ring .val {
+      stroke: #fb7185;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s ease-in-out;
+    }
+
+    .theme-pop .chart-box:nth-child(2) .donut-ring .val { stroke: #2dd4bf; }
+    .theme-pop .chart-box:nth-child(3) .donut-ring .val { stroke: #fef08a; }
+    .theme-pop .chart-box:nth-child(4) .donut-ring .val { stroke: #c084fc; }
+
+    .theme-pop .donut-ring span {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+
+    .theme-pop .chart-box h4 {
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+
+    /* Client bubble grid */
+    .theme-pop .clients-flex {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      max-width: 800px;
+      margin: 3rem auto 0;
+    }
+
+    .theme-pop .client-bubble {
+      background: #fff;
+      border: 2px solid #2e263d;
+      box-shadow: 3px 3px 0px #2e263d;
+      padding: 0.6rem 1.5rem;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    /* Bento contact form card */
+    .theme-pop .contact-bento {
+      background: linear-gradient(135deg, #fb7185 0%, #fef08a 100%);
+      border: 2px solid #2e263d;
+      box-shadow: 6px 6px 0px #2e263d;
+      border-radius: 28px;
+      padding: 3rem;
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .theme-pop .contact-bento h3 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+
+    .theme-pop .contact-bento p {
+      font-size: 1.05rem;
+      font-weight: 500;
+      margin-bottom: 2rem;
+    }
+
+    .theme-pop .contact-input-wrap {
+      display: flex;
+      background: #fff;
+      border: 2px solid #2e263d;
+      border-radius: 50px;
+      padding: 0.4rem;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .theme-pop .contact-input-wrap input {
+      border: none;
+      outline: none;
+      padding: 0.5rem 1.5rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      width: 100%;
+      background: transparent;
+    }
+
+    .theme-pop .contact-input-wrap button {
+      background: #2dd4bf;
+      color: #fff;
+      border: 2px solid #2e263d;
+      padding: 0.6rem 1.5rem;
+      border-radius: 50px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+
+    .theme-pop .contact-input-wrap button:hover {
+      transform: translate(-1px, -1px);
+    }
+
+    .theme-pop footer {
+      background: #2e263d;
+      color: #fff;
+      padding: 4rem 2rem;
+      text-align: center;
+      margin-top: 5rem;
+    }
+
+    .theme-pop footer .logo {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #fb7185;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .theme-pop footer .socials {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .theme-pop footer .socials a {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      color: #fff;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .theme-pop footer .socials a:nth-child(1):hover { background: #fb7185; border-color: #fb7185; }
+    .theme-pop footer .socials a:nth-child(2):hover { background: #2dd4bf; border-color: #2dd4bf; }
+    .theme-pop footer .socials a:nth-child(3):hover { background: #fef08a; border-color: #fef08a; color: #2e263d; }
+    .theme-pop footer .socials a:nth-child(4):hover { background: #c084fc; border-color: #c084fc; }
+
+    .theme-pop footer p {
+      font-size: 0.85rem;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. BUILDER DASHBOARD -->
+  <div id="dashboardView">
+    <div class="dash-container">
+      <div class="dash-header">
+        <h1><span>EngineStudio Pro</span></h1>
+        <p>Compile real-time portfolios using one of 5 premium, interactive design systems.</p>
+      </div>
+
+      <div class="dash-card">
+        <!-- Theme Selector -->
+        <div class="form-section-title">1. Select Visual Theme Template</div>
+        <div class="form-group">
+          <label for="themeSelect">Visual Theme</label>
+          <select id="themeSelect">
+            <option value="novadev">Nova Dev (Futuristic Dark Cyber)</option>
+            <option value="editorial">Editorial / Luxury (Serif Warm Cream)</option>
+            <option value="minimal">Alex Minimalist (Sleek B&W Grid)</option>
+            <option value="brutalist">Neo-Brutalist (Bold Offset Yellow)</option>
+            <option value="pop">Studio Pop (Playful Pastel Bento)</option>
+          </select>
+        </div>
+
+        <!-- PDF Parser -->
+        <div class="form-section-title">2. Parse PDF Resume (Optional Auto-Fill)</div>
+        <div class="form-group">
+          <div class="file-upload-wrapper">
+            <i class="fa-solid fa-file-pdf"></i>
+            <p>Drag and drop or click to upload PDF resume</p>
+            <input type="file" id="inputResumePdf" accept=".pdf">
+          </div>
+        </div>
+
+        <!-- User Information Fields -->
+        <div class="form-section-title">3. Identity & Biography Data</div>
+        <div class="form-group">
+          <label for="manualName">Full Name</label>
+          <input type="text" id="manualName" placeholder="e.g. Alex Henderson">
+        </div>
+        <div class="form-group">
+          <label for="manualTitle">Discipline / Professional Role</label>
+          <input type="text" id="manualTitle" placeholder="e.g. Lead UI Engineer & Designer">
+        </div>
+        <div class="form-group">
+          <label for="manualBio">Core Brand Biography / Quote</label>
+          <textarea id="manualBio" placeholder="Describe your creative philosophy, work approach, or a quote."></textarea>
+        </div>
+
+        <!-- Capabilities & Experience Fields -->
+        <div class="form-section-title">4. Node Capabilities & Experience</div>
+        <div class="form-group">
+          <label for="manualSkills">Technical Skills (Comma separated)</label>
+          <input type="text" id="manualSkills" placeholder="React, Node.js, WebGL, AWS, Typography, Motion Design">
+        </div>
+        <div class="form-group">
+          <label for="manualExperience">Milestones / Experience Journey (One per line: Year Range | Title | Description)</label>
+          <textarea id="manualExperience" placeholder="2024 - Present | Lead Product Engineer - Aether Labs | Leading design systems development.&#10;2022 - 2024 | Senior Front-End Developer - Vortex Studio | Built high-performance interactive layouts.&#10;2020 - 2022 | UI Engineer - Pulse Digital | Designed core component architectures."></textarea>
+        </div>
+
+        <!-- Generate Button -->
+        <button class="dash-btn" onclick="compileGraphicSystem()">Compile Portfolio</button>
+      </div>
+
+      <!-- Result View -->
+      <div id="resultBox">
+        <h3 style="color:#fff; font-size:1.1rem; margin-bottom: 0.5rem;">✓ Portfolio Compiled Successfully</h3>
+        <p style="color:var(--dash-text); font-size:0.85rem;">Copy the URL below to share or open your portfolio:</p>
+        <span class="link-url" id="outputUrl"></span>
+        <button class="dash-btn" style="background:#fff; color:#000;" onclick="copyEngineUrl()">Copy Address URL</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 2. RENDERED PORTFOLIO VIEWS -->
+  <div id="portfolioView">
+
+    <!-- THEME 1: NOVA DEV -->
+    <div id="theme-novadev" class="theme-container">
+      <nav>
+        <div class="logo">//NOVA.<span>DEV</span></div>
+        <div class="links">
+          <a href="#nova-about">About</a>
+          <a href="#nova-projects">Projects</a>
+          <a href="#nova-journey">Timeline</a>
+          <a href="#nova-contact">Contact</a>
+        </div>
+        <a href="#nova-contact" class="hire-btn">Hire Me</a>
+      </nav>
+      
+      <div class="hero" id="nova-about">
+        <div class="avatar-wrap">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" alt="Avatar">
+        </div>
+        <span class="status-pill">Available for new projects</span>
+        <h1 id="novadev-name">Crafting Digital Futures</h1>
+        <p id="novadev-bio">Senior product designer & front-end engineer building immersive, performant interfaces for ambitious teams across the globe.</p>
+        <div class="hero-actions">
+          <a href="#nova-projects" class="btn-primary">View My Work</a>
+          <a href="#" class="btn-secondary">Download CV <i class="fa-solid fa-arrow-down"></i></a>
+        </div>
+      </div>
+
+      <div class="stats-cards">
+        <div class="stat-card">
+          <h3>148+</h3>
+          <p>Projects Completed</p>
+        </div>
+        <div class="stat-card">
+          <h3>9</h3>
+          <p>Years of Experience</p>
+        </div>
+        <div class="stat-card">
+          <h3>62</h3>
+          <p>Happy Clients</p>
+        </div>
+      </div>
+
+      <section class="section" id="nova-projects">
+        <span class="section-label">Selected Work</span>
+        <h2 class="section-title">Featured Projects</h2>
+        <div class="projects-grid">
+          <div class="project-card">
+            <div class="project-image" style="background-image: url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80');"></div>
+            <div class="project-info">
+              <h4>Quantum Analytics</h4>
+              <p>Real-time data dashboard with predictive analytics and high rendering performance.</p>
+              <div class="project-tags">
+                <span class="project-tag">React</span>
+                <span class="project-tag">D3.js</span>
+                <span class="project-tag">Tailwind</span>
+              </div>
+            </div>
+          </div>
+          <div class="project-card">
+            <div class="project-image" style="background-image: url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80');"></div>
+            <div class="project-info">
+              <h4>Nebula Commerce</h4>
+              <p>Headless storefront built with sub-second page loads and a rich 3D viewer node.</p>
+              <div class="project-tags">
+                <span class="project-tag">Next.js</span>
+                <span class="project-tag">GraphQL</span>
+                <span class="project-tag">Three.js</span>
+              </div>
+            </div>
+          </div>
+          <div class="project-card">
+            <div class="project-image" style="background-image: url('https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=600&q=80');"></div>
+            <div class="project-info">
+              <h4>Pulse Fitness AI</h4>
+              <p>Adaptive workout companion app driven by motion tracking capabilities.</p>
+              <div class="project-tags">
+                <span class="project-tag">SwiftUI</span>
+                <span class="project-tag">CoreML</span>
+                <span class="project-tag">Node.js</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <span class="section-label">Capabilities</span>
+        <h2 class="section-title">Technical Tech Stack</h2>
+        <div class="tech-grid" id="novadev-skills">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </section>
+
+      <section class="section" id="nova-journey">
+        <span class="section-label">Journey</span>
+        <h2 class="section-title">Timeline Milestones</h2>
+        <div class="timeline" id="novadev-experience">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </section>
+
+      <section class="section" id="nova-contact">
+        <div class="contact-card">
+          <span class="section-label">Get in touch</span>
+          <h2 class="section-title" style="margin-bottom: 2rem;">Let's build the future together</h2>
+          <form onsubmit="event.preventDefault(); alert('Message sent!');">
+            <div class="contact-form-grid">
+              <input type="text" placeholder="Name" class="form-control" required>
+              <input type="email" placeholder="Email" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <textarea placeholder="Tell me about your project..." class="form-control" required></textarea>
+            </div>
+            <button type="submit" class="submit-btn"><i class="fa-solid fa-paper-plane"></i> Send Message</button>
+          </form>
+        </div>
+      </section>
+
+      <footer>
+        <div id="novadev-footer-copy">© 2026 Nova dev — Crafting Digital Futures</div>
+        <div class="footer-socials">
+          <a href="#"><i class="fa-brands fa-github"></i></a>
+          <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+          <a href="#"><i class="fa-brands fa-dribbble"></i></a>
+          <a href="#"><i class="fa-brands fa-twitter"></i></a>
+        </div>
+      </footer>
+    </div>
+
+
+    <!-- THEME 2: EDITORIAL/LUXURY -->
+    <div id="theme-editorial" class="theme-container">
+      <nav>
+        <div class="logo">Studio.Editorial</div>
+        <div class="links">
+          <a href="#edit-about">Philosophy</a>
+          <a href="#edit-portfolio">Portfolio</a>
+          <a href="#edit-process">Process</a>
+          <a href="#edit-testimonials">Journal</a>
+        </div>
+        <a href="#edit-contact" class="hire-btn">Get in Touch</a>
+      </nav>
+
+      <div class="hero" id="edit-about">
+        <span class="hero-label" id="editorial-title">CREATIVE STUDIO / EST. 2024</span>
+        <h1 id="editorial-name">Stories Told Through Design</h1>
+        <div class="hero-actions">
+          <a href="#edit-portfolio" class="btn-primary">View Portfolio</a>
+          <a href="#edit-about" class="btn-secondary">Read My Story</a>
+        </div>
+      </div>
+
+      <div class="philosophy-sec">
+        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80" alt="Editorial Profile" class="philosophy-img">
+        <div class="philosophy-content">
+          <h3>"Good design isn't decoration — it's the quiet voice that tells your story before a single word is spoken."</h3>
+          <p id="editorial-bio">We construct minimal, elegant editorial frameworks mapping high-end branding directives and visual layouts carefully. Dedicated to rendering pristine presentation grids and clean systems delivery.</p>
+          <a href="#edit-portfolio" class="btn-secondary">More about philosophy</a>
+        </div>
+      </div>
+
+      <section class="section" id="edit-portfolio">
+        <h2 class="section-title">Selected Visual Work</h2>
+        <div class="mosaic-gallery">
+          <div class="gallery-item tall" style="background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80');"></div>
+          <div class="gallery-item" style="background-image: url('https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=600&q=80');"></div>
+          <div class="gallery-item" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80');"></div>
+          <div class="gallery-item wide" style="background-image: url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80');"></div>
+          <div class="gallery-item" style="background-image: url('https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=600&q=80');"></div>
+        </div>
+      </section>
+
+      <section class="section" id="edit-process">
+        <h2 class="section-title">The Creative Process</h2>
+        <div class="process-grid">
+          <div class="process-card">
+            <div class="process-num">1</div>
+            <h4>Discover</h4>
+            <p>Conducting in-depth context exploration loops map project systems directives cleanly.</p>
+          </div>
+          <div class="process-card">
+            <div class="process-num">2</div>
+            <h4>Define</h4>
+            <p>Aligning critical parameters establishes architecture requirements and structural scopes.</p>
+          </div>
+          <div class="process-card">
+            <div class="process-num">3</div>
+            <h4>Design</h4>
+            <p>Drafting beautiful user experience layers ensures elegant brand identity transitions.</p>
+          </div>
+          <div class="process-card">
+            <div class="process-num">4</div>
+            <h4>Deliver</h4>
+            <p>Deploying carefully optimized layout elements maps pixel-perfect execution tracks.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="edit-testimonials">
+        <h2 class="section-title">Client Testimonials</h2>
+        <div class="testimonials-grid" id="editorial-testimonials">
+          <!-- Testimonials populated dynamically by JS -->
+        </div>
+      </section>
+
+      <section class="section" id="edit-contact" style="text-align: center; max-width: 600px;">
+        <h2 class="section-title" style="margin-bottom: 1.5rem;">Let's Collaborate</h2>
+        <p style="opacity: 0.7; margin-bottom: 3rem;">Ready to compile an outstanding visual experience? Drop your message and we'll reach back within 24 hours.</p>
+        <form onsubmit="event.preventDefault(); alert('Message sent!');">
+          <div class="form-group">
+            <input type="text" placeholder="Your Name" style="background:#fff; color:#000; border: 1px solid rgba(0,0,0,0.1);" required>
+          </div>
+          <div class="form-group">
+            <input type="email" placeholder="Your Email" style="background:#fff; color:#000; border: 1px solid rgba(0,0,0,0.1);" required>
+          </div>
+          <div class="form-group">
+            <textarea placeholder="Tell me about your vision..." style="background:#fff; color:#000; border: 1px solid rgba(0,0,0,0.1; height: 120px;" required></textarea>
+          </div>
+          <button type="submit" class="btn-primary" style="border:none; cursor:pointer; width:100%; border-radius:12px;">Send Message</button>
+        </form>
+      </section>
+
+      <footer>
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <h3>Studio.Editorial</h3>
+            <p>Building high-end web experiences using clean typography, warm editorial elements, and premium responsive structures.</p>
+          </div>
+          <div class="footer-links">
+            <h4>Index</h4>
+            <ul>
+              <li><a href="#edit-about">Philosophy</a></li>
+              <li><a href="#edit-portfolio">Portfolio</a></li>
+              <li><a href="#edit-process">Process</a></li>
+            </ul>
+          </div>
+          <div class="footer-links">
+            <h4>Follow</h4>
+            <ul>
+              <li><a href="#">Dribbble</a></li>
+              <li><a href="#">Behance</a></li>
+              <li><a href="#">Instagram</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <div id="editorial-footer-copy">© 2026 Studio Editorial — All rights reserved.</div>
+          <div>EST. 2024 / DESIGNED IN MILAN</div>
+        </div>
+      </footer>
+    </div>
+
+
+    <!-- THEME 3: ALEX MINIMALIST -->
+    <div id="theme-minimal" class="theme-container">
+      <nav>
+        <div class="logo">ALEX.STUDIO</div>
+        <div class="links">
+          <a href="#min-about">About</a>
+          <a href="#min-works">Works</a>
+          <a href="#min-services">Services</a>
+          <a href="#min-contact">Contact</a>
+        </div>
+      </nav>
+
+      <div class="hero">
+        <span class="hero-label" id="minimal-title">CREATIVE PORTFOLIO</span>
+        <h1 id="minimal-name">Hello, I'm Alex.</h1>
+        <p id="minimal-bio">A multidisciplinary designer crafting minimal, intentional, and impactful visual experiences for brands that care about the details.</p>
+        <a href="#min-works" class="btn-primary">View My Work <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+
+      <!-- Scrolling Marquee -->
+      <div class="marquee-banner">
+        <div class="marquee-track" id="minimal-marquee">
+          <!-- Marquee populated dynamically via JS -->
+        </div>
+      </div>
+
+      <div class="about-sec" id="min-about">
+        <div class="about-img-wrap">
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80" alt="Alex Portrait">
+          <div class="about-img-overlay"></div>
+        </div>
+        <div class="about-content">
+          <span class="hero-label">About Me</span>
+          <h3>Designing with intention.</h3>
+          <p>I focus on clean execution and minimal details. Unnecessary elements are stripped away, prioritizing usability, structured grids, and pure typographic hierarchy.</p>
+          
+          <div class="metrics-row">
+            <div class="metric-col">
+              <h3>120+</h3>
+              <p>Projects</p>
+            </div>
+            <div class="metric-col">
+              <h3>08</h3>
+              <p>Years</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section class="section" id="min-works">
+        <div class="section-header">
+          <h2 class="section-title">Selected Works</h2>
+          <span class="section-meta">2022 — 2026</span>
+        </div>
+        <div class="works-grid">
+          <a href="#" class="work-card">
+            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80" alt="Work 1" class="work-img">
+            <span class="work-meta">Art Direction</span>
+            <span class="work-title">Axel Towers</span>
+          </a>
+          <a href="#" class="work-card">
+            <img src="https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=600&q=80" alt="Work 2" class="work-img">
+            <span class="work-meta">Design Studio</span>
+            <span class="work-title">Atelier</span>
+          </a>
+          <div class="view-all-card">
+            <h4>View All Projects</h4>
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="min-services">
+        <div class="section-header">
+          <h2 class="section-title">Services</h2>
+          <span class="section-meta">Capabilities</span>
+        </div>
+        <div class="services-list" id="minimal-services">
+          <!-- Services/milestones dynamically populated -->
+        </div>
+      </section>
+
+      <footer id="min-contact">
+        <p>LET'S WORK TOGETHER</p>
+        <h2><a href="mailto:hello@alexdesign.studio" id="minimal-email">hello@alexdesign.studio</a></h2>
+        
+        <div class="footer-socials">
+          <a href="#"><i class="fa-brands fa-github"></i></a>
+          <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+          <a href="#"><i class="fa-brands fa-dribbble"></i></a>
+          <a href="#"><i class="fa-brands fa-twitter"></i></a>
+        </div>
+        
+        <div class="footer-bottom">
+          <span id="minimal-footer-copy">© 2026 ALEX STUDIO</span>
+          <span>SILENCE IS THE NEW LOUD</span>
+        </div>
+      </footer>
+    </div>
+
+
+    <!-- THEME 4: NEO-BRUTALIST -->
+    <div id="theme-brutalist" class="theme-container">
+      <nav>
+        <div class="logo">Studio.Bold</div>
+        <div class="links">
+          <a href="#brut-works">Work</a>
+          <a href="#brut-about">About</a>
+          <a href="#brut-skills">Skills</a>
+          <a href="#brut-contact">Contact</a>
+        </div>
+      </nav>
+
+      <div class="hero">
+        <div class="hero-content">
+          <h1 id="brutalist-hero-headline">DESIGN. DISRUPT. DELIVER.</h1>
+          <p id="brutalist-bio">I build raw, loud, and unforgettable brand experiences. No fluff. No filler. Just bold work that refuses to blend in.</p>
+          <div class="hero-actions">
+            <a href="#brut-works" class="btn-primary">View the Work <i class="fa-solid fa-arrow-right-long"></i></a>
+            <a href="#brut-contact" class="btn-secondary">Get in touch</a>
+          </div>
+        </div>
+        <div class="hero-accent-block"></div>
+      </div>
+
+      <section class="section" id="brut-works">
+        <span class="section-meta">Selected Work / 2024 — NOW</span>
+        <h2 class="section-title">Projects</h2>
+        <div class="works-list">
+          <a href="#" class="work-row">
+            <div class="work-num-title">
+              <span class="work-row-num">01</span>
+              <span class="work-row-title">Voltage Rebrand</span>
+            </div>
+            <div class="work-row-btn"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
+          </a>
+          <a href="#" class="work-row">
+            <div class="work-num-title">
+              <span class="work-row-num">02</span>
+              <span class="work-row-title">Concrete Co.</span>
+            </div>
+            <div class="work-row-btn"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
+          </a>
+          <a href="#" class="work-row">
+            <div class="work-num-title">
+              <span class="work-row-num">03</span>
+              <span class="work-row-title">Pulse Identity</span>
+            </div>
+            <div class="work-row-btn"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
+          </a>
+        </div>
+      </section>
+
+      <section class="section" id="brut-about">
+        <span class="section-meta">About / The Maker</span>
+        <div class="about-sec">
+          <div class="about-img-box">
+            <img src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=600&q=80" alt="Brutalist portrait">
+          </div>
+          <div class="about-content">
+            <h3 id="brutalist-name">I MAKE LOUD BRANDS THAT REFUSE TO WHISPER</h3>
+            <p>Over a decade I've helped startups and rebels carve out identities that punch through the noise. My work is raw, intentional, and built to be remembered — not scrolled past.</p>
+            <div class="metrics-row">
+              <div class="metric-col">
+                <h4>120+</h4>
+                <p>Projects</p>
+              </div>
+              <div class="metric-col">
+                <h4>14</h4>
+                <p>Years</p>
+              </div>
+              <div class="metric-col">
+                <h4>40+</h4>
+                <p>Awards</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="brut-skills">
+        <span class="section-meta">Capabilities</span>
+        <h2 class="section-title">Skills / Stack</h2>
+        <div class="tags-flex" id="brutalist-skills-container">
+          <!-- Skills dynamically rendered as blocks -->
+        </div>
+      </section>
+
+      <section class="section" id="brut-contact">
+        <span class="section-meta">Contact / Say Hello</span>
+        <h2 class="contact-heading" id="brutalist-contact-heading">HELLO@STUDIO.CO</h2>
+        <form onsubmit="event.preventDefault(); alert('Sent!');">
+          <div class="contact-form-grid">
+            <input type="text" placeholder="YOUR NAME" class="form-control" required>
+            <input type="email" placeholder="YOUR EMAIL" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <textarea placeholder="TELL ME EVERYTHING." class="form-control" required></textarea>
+          </div>
+          <button type="submit" class="submit-btn">SEND IT <i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+      </section>
+
+      <footer>
+        <div class="footer-top">
+          <div class="logo">Studio.Bold</div>
+          <div class="footer-links">
+            <a href="#brut-works">Work</a>
+            <a href="#brut-about">About</a>
+            <a href="#brut-skills">Skills</a>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span id="brutalist-footer-copy">© 2026 STUDIO — ALL RIGHTS RESERVED</span>
+          <span>SHOCK AND AWE</span>
+        </div>
+      </footer>
+    </div>
+
+
+    <!-- THEME 5: STUDIO POP -->
+    <div id="theme-pop" class="theme-container">
+      <nav>
+        <div class="logo"><i class="fa-solid fa-face-smile"></i> Studio Pop</div>
+        <div class="links">
+          <a href="#pop-about">About</a>
+          <a href="#pop-projects">Projects</a>
+          <a href="#pop-stats">Stats</a>
+        </div>
+        <a href="#pop-contact" class="hire-btn">Let's Talk</a>
+      </nav>
+
+      <div class="hero">
+        <div class="hero-bento">
+          <div class="hero-content">
+            <span class="label" id="pop-hero-label">Designer & Illustrator</span>
+            <h1 id="pop-name">Hi! I Make Cool Things 👋</h1>
+            <p id="pop-bio">I'm a multidisciplinary creative who loves turning fun ideas into bright, bubbly experiences that make people smile. Let's build something playful together!</p>
+            <div class="hero-actions">
+              <a href="#pop-projects" class="btn-primary">See My Work <i class="fa-solid fa-arrow-right"></i></a>
+              <a href="#pop-contact" class="btn-secondary">Say Hi</a>
+            </div>
+          </div>
+          <div class="hero-visual"></div>
+        </div>
+      </div>
+
+      <!-- Ribbon tags -->
+      <div class="ribbon-bar">
+        <div class="ribbon-item coral">Branding</div>
+        <div class="ribbon-item yellow">Illustration</div>
+        <div class="ribbon-item teal">UI / UX</div>
+        <div class="ribbon-item purple">Animation</div>
+        <div class="ribbon-item red">Web Design</div>
+      </div>
+
+      <section class="section" id="pop-about">
+        <h2 class="section-title"><span>About Me 🌈</span></h2>
+        <div class="about-bento">
+          <div class="about-avatar-card">
+            <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80" alt="Avatar">
+            <h5 id="pop-about-name">Alex Henderson</h5>
+          </div>
+          <div class="about-content">
+            <h3>I've been doodling, designing, and dreaming up wild ideas for over 8 years. I believe great design should be joyful.</h3>
+            <ul id="pop-experience-list">
+              <!-- Dynamically populated lists -->
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="pop-projects">
+        <h2 class="section-title"><span>Featured Projects 🚀</span></h2>
+        <div class="projects-grid">
+          <div class="project-card">
+            <div class="project-image" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80');"></div>
+            <div class="project-info">
+              <span class="project-tag-pill">Branding</span>
+              <h4>Silk Breeze</h4>
+              <p>A flowing design system built for an active lifestyle startup.</p>
+            </div>
+          </div>
+          <div class="project-card">
+            <div class="project-image" style="background-image: url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80');"></div>
+            <div class="project-info">
+              <span class="project-tag-pill">Mobile App</span>
+              <h4>Byte Loop App</h4>
+              <p>A visual, bubbly system keeping data pipelines active.</p>
+            </div>
+          </div>
+          <div class="project-card">
+            <div class="project-image" style="background-image: url('https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&w=600&q=80');"></div>
+            <div class="project-info">
+              <span class="project-tag-pill">3D Render</span>
+              <h4>Blocky Characters</h4>
+              <p>A fun set of colorful block figures and toy character concepts.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="pop-stats">
+        <h2 class="section-title"><span>Fun Stats 📊</span></h2>
+        <div class="charts-row" id="pop-charts-grid">
+          <!-- Dynamically populated donut charts -->
+        </div>
+
+        <div class="clients-flex" id="pop-clients-grid">
+          <!-- Dynamically populated happy client tags -->
+        </div>
+      </section>
+
+      <section class="section" id="pop-contact">
+        <div class="contact-bento">
+          <h3>Let's Make Something Fun! 🥳</h3>
+          <p>Got a wild idea? Drop your email below and I'll get back to you faster than a bouncing ball.</p>
+          <div class="contact-input-wrap">
+            <input type="email" placeholder="you@email.com" id="pop-contact-email">
+            <button onclick="alert('Sent!');"><i class="fa-solid fa-paper-plane"></i> Send It</button>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <div class="logo"><i class="fa-solid fa-face-smile"></i> Studio Pop</div>
+        <div class="socials">
+          <a href="#"><i class="fa-brands fa-github"></i></a>
+          <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+          <a href="#"><i class="fa-brands fa-dribbble"></i></a>
+          <a href="#"><i class="fa-brands fa-instagram"></i></a>
+        </div>
+        <p id="pop-footer-copy">Made with 💖 & lots of coffee — © 2026 Studio Pop. Stay playful!</p>
+      </footer>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

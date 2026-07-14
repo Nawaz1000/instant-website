@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  portfolio-engine:
+    build: .
+    container_name: local_3d_portfolio_space
+    ports:
+      - "8080:80"
+    restart: always

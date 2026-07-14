@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satoru Gojo Portfolio</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .infinity-rings {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+        .infinity-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        .infinity-ring:nth-child(1) {
+            animation: ring-1 2s infinite linear;
+        }
+        .infinity-ring:nth-child(2) {
+            animation: ring-2 2s infinite linear;
+        }
+        @keyframes ring-1 {
+            0% { transform: rotate(0deg); opacity: 0; }
+            50% { transform: rotate(180deg); opacity: 1; }
+            100% { transform: rotate(360deg); opacity: 0; }
+        }
+        @keyframes ring-2 {
+            0% { transform: rotate(0deg); opacity: 0; }
+            50% { transform: rotate(180deg); opacity: 1; }
+            100% { transform: rotate(360deg); opacity: 0; }
+        }
+        .hero-section {
+            position: relative;
+            overflow: hidden;
+            height: 100vh;
+        }
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            pointer-events: none;
+        }
+        .hero-section .content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+        }
+        .hero-section .subtitle {
+            font-size: 1.5rem;
+            font-style: italic;
+            margin-bottom: 2rem;
+        }
+        .hero-section .name {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .about-section {
+            padding: 2rem;
+            background-color: #f4f4f4;
+            border-radius: 8px;
+        }
+        .about-section h2 {
+            margin-bottom: 1rem;
+        }
+        .about-section p {
+            margin-bottom: 1rem;
+        }
+        .skills-section {
+            padding: 2rem;
+            background-color: #f4f4f4;
+            border-radius: 8px;
+        }
+        .skills-section h2 {
+            margin-bottom: 1rem;
+        }
+        .skills-section .skill {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: #00d4ff;
+            color: white;
+            border-radius: 4px;
+            margin-right: 1rem;
+            transition: background-color 0.3s ease-in-out;
+        }
+        .skills-section .skill:hover {
+            background-color: #00c7ff;
+        }
+        .projects-section {
+            padding: 2rem;
+            background-color: #f4f4f4;
+            border-radius: 8px;
+        }
+        .projects-section h2 {
+            margin-bottom: 1rem;
+        }
+        .projects-section .project {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: #00d4ff;
+            color: white;
+            border-radius: 4px;
+            margin-right: 1rem;
+            transition: background-color 0.3s ease-in-out;
+        }
+        .projects-section .project:hover {
+            background-color: #00c7ff;
+        }
+        .contact-section {
+            padding: 2rem;
+            background-color: #f4f4f4;
+            border-radius: 8px;
+        }
+        .contact-section h2 {
+            margin-bottom: 1rem;
+        }
+        .contact-section input {
+            padding: 0.5rem;
+            border: none;
+            border-radius: 4px;
+            outline: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .contact-section input:focus {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .contact-section button {
+            padding: 0.5rem 1rem;
+            background-color: #00d4ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            outline: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+        .contact-section button:hover {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            pointer-events: none;
+        }
+        .cursor::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+    <header class="bg-black bg-opacity-50 fixed top-0 left-0 right-0 z-10">
+        <div class="container mx-auto px-6 md:px-12 relative z-10 flex items-center h-full">

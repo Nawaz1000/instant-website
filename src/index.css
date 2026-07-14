@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Custom animations for Minimal Marquee */
+@keyframes marquee-run {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee-run 25s linear infinite;
+}
+
+/* Flowing purple glow animation for dashboard background */
+@keyframes flow-glow {
+  0% {
+    transform: translate(-50%, -50%) translate(-15%, -10%) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-50%, -50%) translate(10%, 15%) scale(1.25);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(-15%, -10%) scale(1);
+    opacity: 0.8;
+  }
+}
+
+.animate-flow-glow-1 {
+  animation: flow-glow 18s ease-in-out infinite;
+}
+
+.animate-flow-glow-2 {
+  animation: flow-glow 25s ease-in-out infinite reverse;
+}
+
+/* Glitch text effect for Nova Dev */
+.glow-text-cyan {
+  text-shadow: 0 0 10px rgba(6, 182, 212, 0.3), 0 0 20px rgba(6, 182, 212, 0.2);
+}
+
+.glow-text-purple {
+  text-shadow: 0 0 10px rgba(167, 139, 250, 0.3), 0 0 20px rgba(167, 139, 250, 0.2);
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
