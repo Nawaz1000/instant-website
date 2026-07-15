@@ -12,6 +12,7 @@ RUN npm install
 # Copy source files
 COPY index.html tailwind.config.js postcss.config.js vite.config.js ./
 COPY src/ ./src/
+COPY public/ ./public/
 
 # Build production bundle
 RUN npm run build
