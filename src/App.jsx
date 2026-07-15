@@ -196,7 +196,7 @@ export default function App() {
           src={`/themes/${portfolioData.th}/index.html?t=${Date.now()}`}
           title={portfolioData.n || "3D Portfolio"}
           className="w-full h-full border-none"
-          sandbox="allow-scripts allow-forms"
+          sandbox="allow-scripts allow-forms allow-same-origin"
         />
       </div>
     );
@@ -217,7 +217,7 @@ export default function App() {
           srcDoc={portfolioData.customHtml}
           title={portfolioData.n || "Custom Portfolio"}
           className="w-full h-full border-none"
-          sandbox="allow-scripts allow-forms"
+          sandbox="allow-scripts allow-forms allow-same-origin"
         />
       </div>
     );
