@@ -405,6 +405,7 @@ export default function Dashboard({ onCompile, initialData }) {
     };
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll, { passive: true });
 
     const fetchComments = async () => {
       try {
@@ -421,7 +422,10 @@ export default function Dashboard({ onCompile, initialData }) {
     };
     fetchComments();
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
   }, []);
 
   const [animatedPlaceholder, setAnimatedPlaceholder] = useState('');
@@ -494,8 +498,9 @@ export default function Dashboard({ onCompile, initialData }) {
   const [newFeedback, setNewFeedback] = useState({ name: '', rating: 5, comment: '' });
 
   // Prompt & Doc States
-  const [promptText, setPromptText] = useState(getSaved('promptText', ''));
-  const [documentText, setDocumentText] = useState(getSaved('documentText', ''));
+  const [promptText, setPromptText] = useState('');
+  const [documentText, setDocumentText] = useState('');
+  const [alertMessage, setAlertMessage] = useState(null);
   const [parsedPdfText, setParsedPdfText] = useState('');
   const [modalText, setModalText] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -630,7 +635,7 @@ export default function Dashboard({ onCompile, initialData }) {
     if (!file) return;
 
     if (!file.name.endsWith('.html')) {
-      alert("Please upload a valid .html file.");
+      setAlertMessage("Please upload a valid .html file.");
       return;
     }
 
@@ -1505,15 +1510,15 @@ export default function Dashboard({ onCompile, initialData }) {
   const handleBrainCompile = async () => {
     const finalName = name.trim() || "Portfolio Owner";
     const finalTitle = title.trim() || "Developer";
-    const finalSlug = (slug.trim() || finalName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'portfolio').toLowerCase();
+    const finalSlug = `${finalName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'portfolio'}-${Math.random().toString(36).substring(2, 8)}`;
 
     if (!name.trim()) {
-      alert("Please enter a name first.");
+      setAlertMessage("Please enter a name first.");
       return;
     }
 
     if (selectedTheme === "custom_upload" && !customHtmlContent) {
-      alert("Please upload a custom HTML file first.");
+      setAlertMessage("Please upload a custom HTML file first.");
       return;
     }
 
@@ -1657,7 +1662,7 @@ export default function Dashboard({ onCompile, initialData }) {
       await addLog(`[ERROR] Compilation failed: ${err.message}`, 100);
       setTimeout(() => {
         setIsCompiling(false);
-        alert(`Compilation failed: ${err.message}`);
+        setAlertMessage(`Compilation failed: ${err.message}`);
       }, 1000);
     }
   };
@@ -1699,7 +1704,7 @@ export default function Dashboard({ onCompile, initialData }) {
       const typedarray = new Uint8Array(this.result);
       
       if (!window.pdfjsLib) {
-        alert("PDF parser library not loaded yet. Please try again in a moment.");
+        setAlertMessage("PDF parser library not loaded yet. Please try again in a moment.");
         setPdfParsing(false);
         return;
       }
@@ -1924,11 +1929,11 @@ export default function Dashboard({ onCompile, initialData }) {
   };
 
   const handleCompile = async () => {
-    const finalSlug = (slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')).toLowerCase();
-    if (!finalSlug) {
-      alert("Please enter a name or a custom link slug first.");
+    if (!name.trim()) {
+      setAlertMessage("Please enter a name first.");
       return;
     }
+    const finalSlug = `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'portfolio'}-${Math.random().toString(36).substring(2, 8)}`;
 
     const payload = {
       ...verifyAndEnhanceData(),
@@ -1951,13 +1956,13 @@ export default function Dashboard({ onCompile, initialData }) {
       });
     } catch (err) {
       console.error("Error saving to Firestore:", err);
-      alert("Failed to generate portfolio. Please check your network connection or Firebase database configuration.");
+      setAlertMessage("Failed to generate portfolio. Please check your network connection or Firebase database configuration.");
     }
   };
 
   const copyUrl = () => {
     navigator.clipboard.writeText(compiledUrl).then(() => {
-      alert("Portfolio URL copied to clipboard!");
+      setAlertMessage("Portfolio URL copied to clipboard!");
     });
   };
 
@@ -2115,33 +2120,45 @@ export default function Dashboard({ onCompile, initialData }) {
         {/* Full-Screen Glassmorphic Compiler Loader Overlay */}
         <AnimatePresence>
           {isCompiling && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md px-6">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-6">
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="w-full max-w-lg bg-[#070814]/90 border border-[#00e5ff]/20 rounded-3xl p-6 shadow-[0_0_50px_rgba(0,229,255,0.15)] text-left font-mono"
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                className="w-full max-w-lg bg-[#0d0914]/90 border border-purple-500/30 rounded-2xl p-6 shadow-[0_0_50px_rgba(168,85,247,0.15)] relative overflow-hidden text-left font-mono"
               >
-                <div className="flex items-center justify-between border-b border-[#00e5ff]/10 pb-3 mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-ping" />
-                    <span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Local Compiler Engine</span>
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#00e5ff] via-purple-500 to-[#00e5ff] animate-pulse" />
+                <div className="flex items-center justify-between border-b border-purple-500/10 pb-3 mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-purple-500"></span>
+                    </div>
+                    <span className="text-[10px] text-gray-300 uppercase tracking-widest font-bold">Nova Compiler Engine</span>
                   </div>
-                  <span className="text-[9px] text-[#00e5ff] font-bold">PROCESSING TASK</span>
+                  <span className="text-[9px] text-purple-400 font-bold bg-purple-500/10 px-2 py-1 rounded-full border border-purple-500/20">PROCESSING TASK</span>
                 </div>
                 
                 {/* Logs terminal output */}
-                <div className="space-y-2 max-h-60 overflow-y-auto text-[#00e5ff] text-xs">
+                <div className="space-y-2 max-h-60 min-h-32 overflow-y-auto text-gray-300 text-xs p-3 bg-black/40 rounded-xl border border-white/5">
                   {compileLogs.map((log, index) => (
-                    <div key={index} className="leading-relaxed">
-                      {log}
-                    </div>
+                    <motion.div 
+                      key={index} 
+                      initial={{ opacity: 0, x: -5 }} 
+                      animate={{ opacity: 1, x: 0 }}
+                      className="leading-relaxed flex gap-2"
+                    >
+                      <span className="text-purple-500 opacity-50">&gt;</span>
+                      <span className={log.includes('[ERROR]') ? 'text-red-400' : 'text-gray-300'}>{log}</span>
+                    </motion.div>
                   ))}
+                  <div className="animate-pulse text-purple-400 mt-2">_</div>
                 </div>
                 
-                <div className="flex items-center gap-2 mt-4 text-[10px] text-gray-500 font-bold border-t border-[#00e5ff]/10 pt-3">
-                  <i className="fa-solid fa-spinner fa-spin text-purple-400"></i>
-                  <span>DO NOT CLOSE THIS PAGE · COMPILING DIGITAL SYSTEM</span>
+                <div className="flex items-center justify-center gap-2 mt-5 text-[10px] text-gray-400 font-semibold border-t border-purple-500/10 pt-4">
+                  <i className="fa-solid fa-circle-notch fa-spin text-purple-500 text-sm"></i>
+                  <span className="tracking-wider">DO NOT CLOSE THIS PAGE · COMPILING DIGITAL SYSTEM</span>
                 </div>
               </motion.div>
             </div>
@@ -2513,19 +2530,6 @@ export default function Dashboard({ onCompile, initialData }) {
                         </div>
                       </div>
 
-                      <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Custom Link Slug</label>
-                        <input
-                          type="text"
-                          value={slug}
-                          onChange={(e) => {
-                            setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
-                            setIsSlugManual(true);
-                          }}
-                          placeholder="e.g. your-name"
-                          className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-purple-500 transition-colors"
-                        />
-                      </div>
 
                       <div className="space-y-1">
                         <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Bio / Summary</label>
@@ -3074,6 +3078,36 @@ export default function Dashboard({ onCompile, initialData }) {
           transition: 'opacity 0.2s ease-out'
         }}
       />
+      
+      {/* Custom Alert Modal */}
+      <AnimatePresence>
+        {alertMessage && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="w-full max-w-sm bg-[#0d0914]/90 border border-purple-500/30 rounded-2xl p-6 shadow-[0_0_40px_rgba(168,85,247,0.15)] relative overflow-hidden text-center"
+            >
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-[#00e5ff]" />
+              <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center mx-auto mb-4 border border-purple-500/20">
+                <i className="fa-solid fa-bell text-purple-400 text-lg"></i>
+              </div>
+              <h3 className="text-white font-semibold text-sm mb-2 font-outfit">Notice</h3>
+              <p className="text-gray-400 text-xs leading-relaxed mb-6">
+                {alertMessage}
+              </p>
+              <button
+                onClick={() => setAlertMessage(null)}
+                className="w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white text-xs font-semibold transition-colors focus:outline-none"
+              >
+                Understood
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
