@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { initializeFirestore } from "firebase/firestore";
 
 // Read Firebase configurations from Vite environment variables (or fall back to placeholders)
 const firebaseConfig = {
@@ -14,5 +14,8 @@ const firebaseConfig = {
 // Initialize Firebase App
 const app = initializeApp(firebaseConfig);
 
-// Initialize Cloud Firestore and export it
-export const db = getFirestore(app);
+// Initialize Cloud Firestore with Long-Polling enabled
+// This fixes the "client is offline" error on Hostinger/Cloudflare
+export const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true
+});
