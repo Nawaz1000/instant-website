@@ -1568,6 +1568,8 @@ export default function Dashboard({ onCompile, initialData }) {
 
       const compiledProjects = projects.map(proj => ({
         ...proj,
+        visitLink: proj.link || proj.visitLink || "",
+        codeLink: proj.link || proj.codeLink || "",
         tech: proj.tech ? proj.tech.map(t => t.trim()).filter(Boolean) : []
       }));
 
@@ -1605,10 +1607,13 @@ export default function Dashboard({ onCompile, initialData }) {
         payload = {
           th: "custom_html",
           n: finalName,
+          name: finalName,
           title: finalTitle,
           bio: userData.bio,
           skills: userData.skills,
+          skl: userData.skills,
           experience: userData.experience,
+          exp: userData.experience,
           projects: userData.projects,
           contact: userData.contact,
           customHtml: compiledHtml,
@@ -1622,10 +1627,13 @@ export default function Dashboard({ onCompile, initialData }) {
         payload = {
           th: selectedTheme,
           n: finalName,
+          name: finalName,
           title: finalTitle,
           bio: userData.bio,
           skills: userData.skills,
+          skl: userData.skills,
           experience: userData.experience,
+          exp: userData.experience,
           projects: userData.projects,
           contact: userData.contact,
           slug: finalSlug,
@@ -2011,6 +2019,8 @@ export default function Dashboard({ onCompile, initialData }) {
 
       const compiledProjects = projects.map(proj => ({
         ...proj,
+        visitLink: proj.link || proj.visitLink || "",
+        codeLink: proj.link || proj.codeLink || "",
         tech: proj.tech ? (Array.isArray(proj.tech) ? proj.tech.map(t => t.trim()).filter(Boolean) : proj.tech.split(',').map(t => t.trim()).filter(Boolean)) : []
       }));
 
@@ -2043,10 +2053,13 @@ export default function Dashboard({ onCompile, initialData }) {
         payload = {
           th: "custom_html",
           n: name.trim(),
+          name: name.trim(),
           title: title.trim(),
           bio: userData.bio,
           skills: userData.skills,
+          skl: userData.skills,
           experience: userData.experience,
+          exp: userData.experience,
           projects: userData.projects,
           contact: userData.contact,
           customHtml: compiledHtml,
@@ -2060,10 +2073,13 @@ export default function Dashboard({ onCompile, initialData }) {
         payload = {
           th: selectedTheme,
           n: name.trim(),
+          name: name.trim(),
           title: title.trim(),
           bio: userData.bio,
           skills: userData.skills,
+          skl: userData.skills,
           experience: userData.experience,
+          exp: userData.experience,
           projects: userData.projects,
           contact: userData.contact,
           slug: resolvedSlug,
