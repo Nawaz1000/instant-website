@@ -2253,22 +2253,12 @@ export default function Dashboard({ onCompile, initialData }) {
             <div className="bg-[#070814] border border-white/5 rounded-xl p-3 text-xs text-purple-400 font-mono break-all max-h-24 overflow-y-auto">
               {compiledUrl}
             </div>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <div className="flex justify-center">
               <button
                 onClick={copyUrl}
-                className="px-6 py-2 bg-white text-black font-semibold text-xs rounded-full hover:bg-gray-200 transition-all active:scale-95"
+                className="px-8 py-2.5 bg-white text-black font-semibold text-xs rounded-full hover:bg-gray-200 transition-all active:scale-95 shadow-md"
               >
                 Copy Link URL
-              </button>
-              <button
-                onClick={() => {
-                  if (compiledPayload) {
-                    onCompile(compiledPayload);
-                  }
-                }}
-                className="px-6 py-2 bg-purple-600 text-white font-semibold text-xs rounded-full hover:bg-purple-500 transition-all active:scale-95"
-              >
-                Open Portfolio Preview
               </button>
             </div>
           </motion.div>
