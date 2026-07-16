@@ -535,6 +535,33 @@ export default function Dashboard({ onCompile, initialData }) {
   const [htmlReplacements, setHtmlReplacements] = useState(initialData?.replacements || []);
   const [skillInput, setSkillInput] = useState('');
 
+  const handleReset = () => {
+    setConfirmModal({
+      isOpen: true,
+      message: "Are you sure you want to clear all data and reset the editor?",
+      onConfirm: () => {
+        setName('');
+        setTitle('');
+        setSlug('');
+        setIsSlugManual(false);
+        setBio('');
+        setSkills([]);
+        setExperience([]);
+        setProjects([]);
+        setContact({ email: '', github: '', linkedin: '' });
+        setPromptText('');
+        setDocumentText('');
+        setCustomHtmlContent('');
+        setCustomHtmlName('');
+        setHtmlReplacements([]);
+        
+        const keys = ['name', 'title', 'slug', 'isSlugManual', 'selectedTheme', 'bio', 'skills', 'experience', 'projects', 'contact', 'promptText', 'documentText', 'customHtmlContent'];
+        keys.forEach(k => localStorage.removeItem(`portfolio_builder_${k}`));
+      },
+      onCancel: null
+    });
+  };
+
   const submitComment = async (nameVal, ratingVal, commentVal) => {
     if (!nameVal.trim() || !commentVal.trim()) return;
     const payload = {
@@ -2024,10 +2051,17 @@ export default function Dashboard({ onCompile, initialData }) {
             instant-websites
           </span>
         </div>
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-6 md:gap-8">
           <a href="#" className="flex items-center gap-1.5 text-sm font-semibold text-white/90 hover:text-white pb-1 border-b-2 border-purple-500 transition-colors">
             <i className="fa-solid fa-house text-[11px]"></i> Home
           </a>
+          <button
+            onClick={handleReset}
+            className="flex items-center gap-1.5 text-xs font-bold text-gray-400 hover:text-red-400 transition-colors bg-white/5 hover:bg-red-500/10 border border-white/5 hover:border-red-500/20 px-3 py-1.5 rounded-xl active:scale-95"
+            title="Clear all inputs and reset form"
+          >
+            <i className="fa-solid fa-trash-can text-[10px]"></i> Reset
+          </button>
         </div>
       </motion.nav>
 
