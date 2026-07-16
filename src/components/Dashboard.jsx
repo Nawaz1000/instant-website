@@ -534,6 +534,23 @@ export default function Dashboard({ onCompile, initialData }) {
   const [customHtmlName, setCustomHtmlName] = useState(initialData?.customHtml ? "Saved Custom HTML" : "");
   const [htmlReplacements, setHtmlReplacements] = useState(initialData?.replacements || []);
   const [skillInput, setSkillInput] = useState('');
+  const [dbCustomThemes, setDbCustomThemes] = useState([]);
+
+  useEffect(() => {
+    const loadCustomThemes = async () => {
+      try {
+        const snap = await getDocs(collection(db, "app_custom_themes"));
+        const list = [];
+        snap.forEach(doc => {
+          list.push(doc.data());
+        });
+        setDbCustomThemes(list);
+      } catch (e) {
+        console.warn("Could not load dynamic custom themes:", e);
+      }
+    };
+    loadCustomThemes();
+  }, []);
 
   const submitComment = async (nameVal, ratingVal, commentVal) => {
     if (!nameVal.trim() || !commentVal.trim()) return;
@@ -1569,10 +1586,12 @@ export default function Dashboard({ onCompile, initialData }) {
       await addLog(`[SKILLS] Skills tags -> [${skills.join(', ')}]`, 150);
 
       let payload;
+      const chosenThemeObj = dbCustomThemes.find(t => t.id === selectedTheme);
 
-      if (selectedTheme === "custom_upload") {
+      if (selectedTheme === "custom_upload" || chosenThemeObj) {
+        const baseHtml = chosenThemeObj ? chosenThemeObj.customHtml : customHtmlContent;
         await addLog("[COMPILER] Injecting details into custom theme HTML...", 150);
-        let compiledHtml = injectUserDataIntoCustomHtml(customHtmlContent, userData, "");
+        let compiledHtml = injectUserDataIntoCustomHtml(baseHtml, userData, "");
 
         // Apply any manual custom text replacements configured
         htmlReplacements.forEach(rep => {
@@ -1593,7 +1612,7 @@ export default function Dashboard({ onCompile, initialData }) {
           projects: userData.projects,
           contact: userData.contact,
           customHtml: compiledHtml,
-          rawCustomHtml: customHtmlContent,
+          rawCustomHtml: baseHtml,
           replacements: htmlReplacements,
           slug: finalSlug,
           createdAt: Date.now()
@@ -2978,6 +2997,15 @@ export default function Dashboard({ onCompile, initialData }) {
                   { id: 'theme3', name: 'Theme 3 - Sleek Modern', desc: 'Sleek, high-contrast black & white layout with fluid parallax scrolling animations.', icon: 'fa-cubes', color: 'from-blue-500 to-indigo-500', preview: '/themes/theme3_preview.png', badge: 'Parallax' },
                   { id: 'theme4', name: 'Theme 4 - Awwwards Standard', desc: 'Award-winning minimalist design featuring floating interactive work showcases, clean typography, and micro-interactive elements.', icon: 'fa-wand-magic-sparkles', color: 'from-pink-500 to-rose-500', preview: '/themes/theme4_preview.png', badge: 'Awwwards' },
                   { id: 'theme5', name: 'Theme 5 - Adrian Hajdin 3D', desc: 'Beautiful 3D interactive developer portfolio with custom GLTF models, smooth GSAP transitions, and floating stars.', icon: 'fa-cubes-stacked', color: 'from-amber-500 to-orange-600', preview: '/themes/theme5_preview.png', badge: '3D GSAP' },
+                  ...dbCustomThemes.map(ct => ({
+                    id: ct.id,
+                    name: ct.name,
+                    desc: 'Custom community template dynamic layout.',
+                    icon: 'fa-palette',
+                    color: ct.color || 'from-purple-650 to-indigo-650',
+                    preview: '/themes/custom_preview.png',
+                    badge: 'Custom'
+                  })),
                   { id: 'custom_upload', name: 'Custom Theme / Custom HTML', desc: 'Upload your own custom index.html file to host your own portfolio.', icon: 'fa-file-code', color: 'from-blue-500 to-indigo-600', preview: '/themes/custom_preview.png', badge: 'HTML' }
                 ].map(t => {
                   const isSelected = selectedTheme === t.id;

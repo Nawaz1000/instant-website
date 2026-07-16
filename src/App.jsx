@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import Dashboard from './components/Dashboard'
 import DynamicTheme from './components/DynamicTheme'
 import AdminDashboard from './components/AdminDashboard'
-import { doc, getDoc, setDoc, updateDoc, increment } from 'firebase/firestore'
+import { doc, getDoc, setDoc, updateDoc, increment, collection } from 'firebase/firestore'
 import { db } from './firebase'
 
 // UTF-8 safe Base64 encoding & decoding helper functions
@@ -28,6 +28,9 @@ export default function App() {
 
   // Analytics: Record site visit
   useEffect(() => {
+    const path = window.location.pathname.replace(/^\/|\/$/g, '') || '/';
+    if (path.toLowerCase() === 'admin-panel') return; // Exclude admin visits
+
     try {
       const isNewVisitor = !localStorage.getItem('instantwebsite_visited');
       if (isNewVisitor) {
@@ -39,16 +42,36 @@ export default function App() {
         totalHits: increment(1),
         ...(isNewVisitor && { uniqueUsers: increment(1) })
       }).catch(err => {
-        // Document does not exist yet, initialize it
         if (err.code === 'not-found' || err.message.includes('No document to update')) {
           setDoc(statsRef, {
             totalHits: 1,
             uniqueUsers: 1
           }, { merge: true }).catch(e => console.warn("Analytics initialization failed:", e));
-        } else {
-          console.warn("Analytics error:", err);
         }
       });
+
+      // Fetch IP and log detailed visitor info
+      fetch('https://api.ipify.org?format=json')
+        .then(res => res.json())
+        .then(async (data) => {
+          const ip = data.ip;
+          const logRef = doc(collection(db, 'visitor_logs'));
+          await setDoc(logRef, {
+            ip: ip,
+            path: '/' + (path === '/' ? '' : path),
+            name: path === '/' ? 'Builder Visitor' : `Portfolio: ${path}`,
+            timestamp: Date.now()
+          });
+        })
+        .catch(err => {
+          const logRef = doc(collection(db, 'visitor_logs'));
+          setDoc(logRef, {
+            ip: 'Unknown',
+            path: '/' + (path === '/' ? '' : path),
+            name: path === '/' ? 'Builder Visitor' : `Portfolio: ${path}`,
+            timestamp: Date.now()
+          }).catch(e => console.warn("Visitor logging failed:", e));
+        });
     } catch (e) {
       console.warn("Analytics write failed:", e);
     }
