@@ -214,7 +214,7 @@ const Ferrofluid = ({
   const meshRef = useRef(null);
   const geometryRef = useRef(null);
   const rendererRef = useRef(null);
-  const mouseTargetRef = useRef([0, 0]);
+  const mouseTargetRef = useRef([-10000, -10000]);
   const lastTimeRef = useRef(0);
 
   useEffect(() => {
@@ -239,7 +239,7 @@ const Ferrofluid = ({
 
     const uniforms = {
       iResolution: { value: [gl.drawingBufferWidth, gl.drawingBufferHeight, 1] },
-      iMouse: { value: [0, 0] },
+      iMouse: { value: [-10000, -10000] },
       iTime: { value: 0 },
       uColor0: { value: arr[0] },
       uColor1: { value: arr[1] },
@@ -294,8 +294,15 @@ const Ferrofluid = ({
         uniforms.iMouse.value = [x, y];
       }
     };
+    const onPointerLeave = () => {
+      mouseTargetRef.current = [-10000, -10000];
+      if (mouseDampening <= 0) {
+        uniforms.iMouse.value = [-10000, -10000];
+      }
+    };
     if (mouseInteraction) {
       canvas.addEventListener('pointermove', onPointerMove);
+      canvas.addEventListener('pointerleave', onPointerLeave);
     }
 
     const loop = t => {
@@ -327,7 +334,10 @@ const Ferrofluid = ({
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      if (mouseInteraction) canvas.removeEventListener('pointermove', onPointerMove);
+      if (mouseInteraction) {
+        canvas.removeEventListener('pointermove', onPointerMove);
+        canvas.removeEventListener('pointerleave', onPointerLeave);
+      }
       ro.disconnect();
       if (canvas.parentElement === container) {
         container.removeChild(canvas);
