@@ -300,7 +300,7 @@ const Ferrofluid = ({
 
     const loop = t => {
       rafRef.current = requestAnimationFrame(loop);
-      uniforms.iTime.value = t * 0.001;
+      uniforms.iTime.value = (t * 0.001) % 10000.0;
       if (mouseDampening > 0) {
         if (!lastTimeRef.current) lastTimeRef.current = t;
         const dt = (t - lastTimeRef.current) / 1000;

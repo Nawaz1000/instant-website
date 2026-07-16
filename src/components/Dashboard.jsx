@@ -2093,16 +2093,20 @@ export default function Dashboard({ onCompile, initialData }) {
           </div>
 
           {/* Buttons: Add Document, Themes & Build */}
-          <div className="flex w-full md:w-auto justify-between items-center md:pl-4 gap-3">
+          <div className={`${
+            selectedTheme === 'custom_upload'
+              ? 'grid grid-cols-3 md:flex gap-2 w-full md:w-auto items-center justify-end md:pl-4 border-t md:border-t-0 border-white/5 pt-3 md:pt-0'
+              : 'grid grid-cols-2 md:flex gap-2 w-full md:w-auto items-center justify-end md:pl-4 border-t md:border-t-0 border-white/5 pt-3 md:pt-0'
+          }`}>
             <button
               onClick={() => { setModalText(documentText); setIsModalOpen(true); }}
-              className="py-3 px-5 bg-white/5 hover:bg-white/10 text-white/90 font-bold text-xs uppercase tracking-wider rounded-xl md:rounded-full border border-white/10 hover:border-white/15 transition-all flex items-center justify-center gap-1.5 active:scale-95 flex-shrink-0"
+              className="py-3 px-3 md:px-5 bg-white/5 hover:bg-white/10 text-white/90 font-bold text-xs uppercase tracking-wider rounded-xl md:rounded-full border border-white/10 hover:border-white/15 transition-all flex items-center justify-center gap-1.5 active:scale-95 col-span-1 flex-shrink-0"
             >
-              <i className="fa-solid fa-file-invoice text-[11px] text-purple-400"></i> {documentText ? "Doc Loaded" : "Add Doc"}
+              <i className="fa-solid fa-file-invoice text-[11px] text-purple-400"></i> {documentText ? "Loaded" : "Add Doc"}
             </button>
             <button
               onClick={() => setIsTemplatesModalOpen(true)}
-              className="py-3 px-5 bg-white/5 hover:bg-white/10 text-white/90 font-bold text-xs uppercase tracking-wider rounded-xl md:rounded-full border border-white/10 hover:border-white/15 transition-all flex items-center justify-center gap-1.5 active:scale-95 flex-shrink-0"
+              className="py-3 px-3 md:px-5 bg-white/5 hover:bg-white/10 text-white/90 font-bold text-xs uppercase tracking-wider rounded-xl md:rounded-full border border-white/10 hover:border-white/15 transition-all flex items-center justify-center gap-1.5 active:scale-95 col-span-1 flex-shrink-0"
             >
               <i className="fa-solid fa-images text-[11px] text-purple-400"></i> Themes
             </button>
@@ -2110,7 +2114,7 @@ export default function Dashboard({ onCompile, initialData }) {
               <button
                 type="button"
                 onClick={() => setIsCustomThemeModalOpen(true)}
-                className="py-3 px-4 bg-white/5 hover:bg-white/10 text-white/90 font-bold text-xs rounded-xl md:rounded-full border border-white/10 hover:border-white/15 transition-all flex items-center justify-center gap-1.5 active:scale-95 flex-shrink-0"
+                className="py-3 px-4 bg-white/5 hover:bg-white/10 text-white/90 font-bold text-xs rounded-xl md:rounded-full border border-white/10 hover:border-white/15 transition-all flex items-center justify-center gap-1.5 active:scale-95 col-span-1 flex-shrink-0"
                 title="Configure Custom Theme"
               >
                 <i className="fa-solid fa-gear text-[11px] text-purple-400"></i>
@@ -2118,7 +2122,9 @@ export default function Dashboard({ onCompile, initialData }) {
             )}
             <button
               onClick={handlePreBuild}
-              className="py-3 px-6 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl md:rounded-full shadow-lg shadow-purple-500/20 transition-all flex items-center justify-center gap-1.5 active:scale-95 flex-shrink-0"
+              className={`py-3 px-6 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl md:rounded-full shadow-lg shadow-purple-500/20 transition-all flex items-center justify-center gap-1.5 active:scale-95 flex-shrink-0 ${
+                selectedTheme === 'custom_upload' ? 'col-span-3 md:col-span-1' : 'col-span-2 md:col-span-1'
+              }`}
             >
               <i className="fa-solid fa-hammer text-[11px]"></i> Build
             </button>
