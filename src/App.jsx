@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import Dashboard from './components/Dashboard'
 import DynamicTheme from './components/DynamicTheme'
-import { doc, getDoc } from 'firebase/firestore'
+import AdminDashboard from './components/AdminDashboard'
+import { doc, getDoc, setDoc, updateDoc, increment } from 'firebase/firestore'
 import { db } from './firebase'
 
 // UTF-8 safe Base64 encoding & decoding helper functions
@@ -23,6 +24,35 @@ export default function App() {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Analytics: Record site visit
+  useEffect(() => {
+    try {
+      const isNewVisitor = !localStorage.getItem('instantwebsite_visited');
+      if (isNewVisitor) {
+        localStorage.setItem('instantwebsite_visited', 'true');
+      }
+      
+      const statsRef = doc(db, 'siteAnalytics', 'dashboard');
+      updateDoc(statsRef, {
+        totalHits: increment(1),
+        ...(isNewVisitor && { uniqueUsers: increment(1) })
+      }).catch(err => {
+        // Document does not exist yet, initialize it
+        if (err.code === 'not-found' || err.message.includes('No document to update')) {
+          setDoc(statsRef, {
+            totalHits: 1,
+            uniqueUsers: 1
+          }, { merge: true }).catch(e => console.warn("Analytics initialization failed:", e));
+        } else {
+          console.warn("Analytics error:", err);
+        }
+      });
+    } catch (e) {
+      console.warn("Analytics write failed:", e);
+    }
+  }, []);
 
   // Dynamic SEO Updates
   useEffect(() => {
@@ -54,14 +84,22 @@ export default function App() {
       setMeta('twitter:title', docTitle);
       setMeta('twitter:description', docDesc);
       
+    } else if (isAdmin) {
+      document.title = 'Admin Analytics Dashboard';
     } else {
       document.title = 'Website Builder';
     }
-  }, [portfolioData, isEditor]);
+  }, [portfolioData, isEditor, isAdmin]);
 
   useEffect(() => {
     // 1. Try to load from pathname slug (e.g. /faraaz)
     const path = window.location.pathname.replace(/^\/|\/$/g, '');
+    
+    if (path.toLowerCase() === 'admin-panel') {
+      setIsAdmin(true);
+      return;
+    }
+
     const isSpecialPath = path && path !== 'index.html' && !path.startsWith('themes/') && !path.includes('/');
 
     if (isSpecialPath) {
@@ -129,6 +167,17 @@ export default function App() {
         <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
         <p className="text-xs uppercase tracking-widest opacity-80">Fetching portfolio data...</p>
       </div>
+    );
+  }
+
+  if (isAdmin) {
+    return (
+      <AdminDashboard 
+        onBack={() => {
+          setIsAdmin(false);
+          window.history.pushState({}, '', window.location.origin);
+        }} 
+      />
     );
   }
 

@@ -59,8 +59,15 @@ export function extractName(text) {
   if (!text) return null;
   const cleanText = text.replace(/\s+/g, ' ');
   
-  // Truncate candidate at common stopwords or articles or level indicators
-  const stopWords = ['a', 'an', 'the', 'with', 'junior', 'junoir', 'senior', 'senoir', 'devops', 'engineer', 'developer', 'designer', 'architect', 'at', 'in', 'of', 'for', 'from', '1yr', '2yr', '3yr', 'experience', 'intern', 'is', 'resume', 'cv'];
+  // Truncate candidate at common stopwords, articles, or level indicators/professions to avoid bleed
+  const stopWords = [
+    'a', 'an', 'the', 'with', 'junior', 'junoir', 'senior', 'senoir', 'devops', 'engineer', 
+    'developer', 'designer', 'architect', 'at', 'in', 'of', 'for', 'from', '1yr', '2yr', '3yr', 
+    'experience', 'intern', 'is', 'resume', 'cv', 'software', 'frontend', 'backend', 
+    'fullstack', 'full', 'stack', 'cloud', 'systems', 'platform', 'security', 'analyst', 
+    'programmer', 'coder', 'expert', 'lead', 'manager', 'specialist', 'product', 'project', 
+    'graphics', 'creative', 'ux', 'ui', 'photographer', 'writer'
+  ];
 
   // 1. Try first non-empty lines (very common in resumes)
   const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
@@ -80,12 +87,24 @@ export function extractName(text) {
   }
 
   // 2. Prioritize explicit introduction patterns
+  // We check extremely strong patterns (like "my name is") first, and allow 1-4 words.
   const explicitPatterns = [
-    /\b(?:name|n)\b\s*[:\-=\s]\s*([a-zA-Z\.\u00c0-\u017f]+(?:\s+[a-zA-Z\.\u00c0-\u017f]+){1,3})/i,
-    /\b(?:my name is|i am|i'm|im|meet)\b\s+([a-zA-Z\.\u00c0-\u017f]+(?:\s+[a-zA-Z\.\u00c0-\u017f]+){1,3})/i
+    {
+      pattern: /\b(?:my name is|name is|meet)\b\s+([a-zA-Z\.\u00c0-\u017f]+(?:\s+[a-zA-Z\.\u00c0-\u017f]+){0,3})/i,
+      minWords: 1
+    },
+    {
+      pattern: /\b(?:name|n)\b\s*[:\-=\s]\s*([a-zA-Z\.\u00c0-\u017f]+(?:\s+[a-zA-Z\.\u00c0-\u017f]+){0,3})/i,
+      minWords: 1
+    },
+    // i am / i'm (but reject if followed by articles or common work/role verbs to avoid matching "i am a developer")
+    {
+      pattern: /\b(?:i am|i'm|im)\b\s+(?!a\b|an\b|the\b|working\b|employed\b|studying\b|seeking\b)([a-zA-Z\.\u00c0-\u017f]+(?:\s+[a-zA-Z\.\u00c0-\u017f]+){0,3})/i,
+      minWords: 1
+    }
   ];
   
-  for (const pattern of explicitPatterns) {
+  for (const { pattern, minWords } of explicitPatterns) {
     const match = cleanText.match(pattern);
     if (match) {
       let candidate = match[1].trim();
@@ -95,7 +114,7 @@ export function extractName(text) {
         if (stopWords.includes(w.toLowerCase())) break;
         cleanedWords.push(w);
       }
-      if (cleanedWords.length >= 2) {
+      if (cleanedWords.length >= minWords) {
         candidate = cleanedWords.join(' ');
         const lowercaseWords = cleanedWords.map(w => w.toLowerCase());
         const isInvalid = lowercaseWords.some(w => invalidKeywords.includes(w));
@@ -198,7 +217,8 @@ export function extractInfo(promptText = "", documentText = "") {
     if (titleLabelMatch) {
       title = titleLabelMatch[1].trim();
     } else {
-      const titleIntroMatch = combinedText.match(/(?:i am a|i'm a|working as a|employed as a|role of|professional|certified|im|i'm|i am|as a|as an)\s+(?:a|an|the)?\s*([a-zA-Z0-9\s\\/\&]{3,40}?)(?=\s+(?:at|for|since|with|in|specialized|focused|who|that|from)\\b|\\.|\\n|$|,)/i);
+      // Lookahead terminates before name indicators or default lookaheads to prevent title capturing names
+      const titleIntroMatch = combinedText.match(/(?:i am a|i'm a|working as a|employed as a|role of|professional|certified|im|i'm|i am|as a|as an)\s+(?:a|an|the)?\s*([a-zA-Z0-9\s\/&]{3,40}?)(?=\s+(?:at|for|since|with|in|specialized|focused|who|that|from|my name is|name is|i am|i'm|im)\b|\.|\n|$|,)/i);
       if (titleIntroMatch) {
         title = titleIntroMatch[1].trim();
       }

@@ -501,6 +501,7 @@ export default function Dashboard({ onCompile, initialData }) {
   const [promptText, setPromptText] = useState('');
   const [documentText, setDocumentText] = useState('');
   const [alertMessage, setAlertMessage] = useState(null);
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, message: '', onConfirm: null, onCancel: null });
   const [parsedPdfText, setParsedPdfText] = useState('');
   const [modalText, setModalText] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -807,9 +808,14 @@ export default function Dashboard({ onCompile, initialData }) {
     }
 
     setTimeout(() => {
-      if (window.confirm("This data has been fetched from your information. Would you like to review and edit the fetched data?")) {
-        setIsBuildModalOpen(true);
-      }
+      setConfirmModal({
+        isOpen: true,
+        message: "This data has been fetched from your information. Would you like to review and edit the fetched data?",
+        onConfirm: () => {
+          setIsBuildModalOpen(true);
+        },
+        onCancel: null
+      });
     }, 100);
   };
 
@@ -1594,7 +1600,8 @@ export default function Dashboard({ onCompile, initialData }) {
           customHtml: compiledHtml,
           rawCustomHtml: customHtmlContent,
           replacements: htmlReplacements,
-          slug: finalSlug
+          slug: finalSlug,
+          createdAt: Date.now()
         };
       } else {
         await addLog(`[COMPILER] Preparing selected ${selectedTheme} configuration...`, 150);
@@ -1607,7 +1614,8 @@ export default function Dashboard({ onCompile, initialData }) {
           experience: userData.experience,
           projects: userData.projects,
           contact: userData.contact,
-          slug: finalSlug
+          slug: finalSlug,
+          createdAt: Date.now()
         };
       }
 
@@ -2119,50 +2127,105 @@ export default function Dashboard({ onCompile, initialData }) {
 
         {/* Full-Screen Glassmorphic Compiler Loader Overlay */}
         <AnimatePresence>
-          {isCompiling && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-6">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                className="w-full max-w-lg bg-[#0d0914]/90 border border-purple-500/30 rounded-2xl p-6 shadow-[0_0_50px_rgba(168,85,247,0.15)] relative overflow-hidden text-left font-mono"
-              >
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#00e5ff] via-purple-500 to-[#00e5ff] animate-pulse" />
-                <div className="flex items-center justify-between border-b border-purple-500/10 pb-3 mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="relative flex h-3 w-3">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-3 w-3 bg-purple-500"></span>
+          {isCompiling && (() => {
+            const activeStep = (() => {
+              if (compileLogs.some(log => log.includes("complete!") || log.includes("successfully saved"))) return 4;
+              if (compileLogs.some(log => log.includes("Firestore") || log.includes("DATABASE") || log.includes("collision"))) return 3;
+              if (compileLogs.some(log => log.includes("Compiling") || log.includes("Preparing") || log.includes("Skills"))) return 2;
+              return 1;
+            })();
+            const steps = [
+              { id: 1, name: "Parse Profile" },
+              { id: 2, name: "Compile Theme" },
+              { id: 3, name: "Cloud Sync" },
+              { id: 4, name: "Deploy Live" }
+            ];
+            return (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-6">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  className="w-full max-w-lg bg-[#0b0813]/95 border border-purple-500/30 rounded-3xl p-8 shadow-[0_0_80px_rgba(168,85,247,0.25)] relative overflow-hidden text-left"
+                >
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#00e5ff] via-purple-500 to-[#00e5ff] animate-pulse" />
+                  
+                  {/* Modal Header */}
+                  <div className="flex items-center justify-between border-b border-purple-500/10 pb-4 mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="relative flex h-3.5 w-3.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-purple-500"></span>
+                      </div>
+                      <span className="text-xs text-white uppercase tracking-widest font-extrabold font-outfit">Nova Compiler v2</span>
                     </div>
-                    <span className="text-[10px] text-gray-300 uppercase tracking-widest font-bold">Nova Compiler Engine</span>
+                    <span className="text-[10px] text-purple-400 font-extrabold bg-purple-500/10 px-2.5 py-1 rounded-full border border-purple-500/20 tracking-wider">COMPILING ASSETS</span>
                   </div>
-                  <span className="text-[9px] text-purple-400 font-bold bg-purple-500/10 px-2 py-1 rounded-full border border-purple-500/20">PROCESSING TASK</span>
-                </div>
-                
-                {/* Logs terminal output */}
-                <div className="space-y-2 max-h-60 min-h-32 overflow-y-auto text-gray-300 text-xs p-3 bg-black/40 rounded-xl border border-white/5">
-                  {compileLogs.map((log, index) => (
-                    <motion.div 
-                      key={index} 
-                      initial={{ opacity: 0, x: -5 }} 
-                      animate={{ opacity: 1, x: 0 }}
-                      className="leading-relaxed flex gap-2"
-                    >
-                      <span className="text-purple-500 opacity-50">&gt;</span>
-                      <span className={log.includes('[ERROR]') ? 'text-red-400' : 'text-gray-300'}>{log}</span>
-                    </motion.div>
-                  ))}
-                  <div className="animate-pulse text-purple-400 mt-2">_</div>
-                </div>
-                
-                <div className="flex items-center justify-center gap-2 mt-5 text-[10px] text-gray-400 font-semibold border-t border-purple-500/10 pt-4">
-                  <i className="fa-solid fa-circle-notch fa-spin text-purple-500 text-sm"></i>
-                  <span className="tracking-wider">DO NOT CLOSE THIS PAGE · COMPILING DIGITAL SYSTEM</span>
-                </div>
-              </motion.div>
-            </div>
-          )}
+
+                  {/* Horizontal Progress Steps */}
+                  <div className="grid grid-cols-4 gap-2 mb-8 relative">
+                    {steps.map(s => {
+                      const isCompleted = activeStep > s.id;
+                      const isActive = activeStep === s.id;
+                      return (
+                        <div key={s.id} className="flex flex-col items-center text-center">
+                          <div className={`w-9 h-9 rounded-full flex items-center justify-center border text-xs font-bold transition-all duration-500 z-10 ${
+                            isCompleted 
+                              ? 'bg-green-500/10 border-green-500 text-green-400' 
+                              : isActive 
+                              ? 'bg-purple-500/20 border-purple-500 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.4)]' 
+                              : 'bg-white/5 border-white/10 text-gray-500'
+                          }`}>
+                            {isCompleted ? (
+                              <i className="fa-solid fa-check text-xs"></i>
+                            ) : isActive ? (
+                              <i className="fa-solid fa-circle-notch fa-spin text-[10px]"></i>
+                            ) : (
+                              <span>{s.id}</span>
+                            )}
+                          </div>
+                          <span className={`text-[9px] font-extrabold mt-2 uppercase tracking-wider transition-colors duration-500 ${
+                            isActive ? 'text-purple-400 font-black' : isCompleted ? 'text-green-400' : 'text-gray-600'
+                          }`}>
+                            {s.name}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Logs terminal output */}
+                  <div className="space-y-1.5 max-h-48 min-h-32 overflow-y-auto text-xs p-4 bg-black/60 rounded-2xl border border-white/5 font-mono">
+                    {compileLogs.map((log, index) => {
+                      let colorClass = 'text-gray-300';
+                      if (log.includes('[COMPILER]')) colorClass = 'text-cyan-400 font-semibold';
+                      else if (log.includes('[ENTITY]')) colorClass = 'text-purple-455';
+                      else if (log.includes('[SKILLS]')) colorClass = 'text-amber-400';
+                      else if (log.includes('[DATABASE]')) colorClass = 'text-emerald-400';
+                      else if (log.includes('[ERROR]')) colorClass = 'text-red-400 font-bold';
+                      return (
+                        <motion.div 
+                          key={index} 
+                          initial={{ opacity: 0, x: -3 }} 
+                          animate={{ opacity: 1, x: 0 }}
+                          className="leading-relaxed flex gap-2"
+                        >
+                          <span className="text-purple-500/50 select-none">&gt;</span>
+                          <span className={colorClass}>{log}</span>
+                        </motion.div>
+                      );
+                    })}
+                    <div className="animate-pulse text-purple-400 mt-1 select-none">_</div>
+                  </div>
+                  
+                  <div className="flex items-center justify-center gap-2 mt-6 text-[10px] text-gray-500 font-bold border-t border-white/5 pt-5">
+                    <span className="tracking-widest">DIGITAL TWIN PIPELINE ACTIVE · SYSTEM IDLE</span>
+                  </div>
+                </motion.div>
+              </div>
+            );
+          })()}
         </AnimatePresence>
 
 
@@ -3104,6 +3167,50 @@ export default function Dashboard({ onCompile, initialData }) {
               >
                 Understood
               </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Custom Confirm Modal */}
+      <AnimatePresence>
+        {confirmModal.isOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="w-full max-w-sm bg-[#0d0914]/95 border border-purple-500/30 rounded-2xl p-6 shadow-[0_0_50px_rgba(168,85,247,0.2)] relative overflow-hidden text-center"
+            >
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#00e5ff] via-purple-500 to-[#00e5ff]" />
+              <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center mx-auto mb-4 border border-purple-500/20">
+                <i className="fa-solid fa-circle-question text-purple-400 text-lg animate-pulse"></i>
+              </div>
+              <h3 className="text-white font-semibold text-sm mb-2 font-outfit">Verification Required</h3>
+              <p className="text-gray-400 text-xs leading-relaxed mb-6 font-outfit">
+                {confirmModal.message}
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    if (confirmModal.onCancel) confirmModal.onCancel();
+                    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                  }}
+                  className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-gray-300 text-xs font-semibold transition-colors focus:outline-none"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirmModal.onConfirm) confirmModal.onConfirm();
+                    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                  }}
+                  className="flex-1 py-2.5 bg-gradient-to-r from-purple-650 to-indigo-650 hover:from-purple-550 hover:to-indigo-550 text-white rounded-xl text-xs font-semibold shadow-lg shadow-purple-500/20 transition-all active:scale-95 focus:outline-none"
+                >
+                  Review & Edit
+                </button>
+              </div>
             </motion.div>
           </div>
         )}
