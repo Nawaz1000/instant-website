@@ -425,15 +425,34 @@ export function extractInfo(promptText = "", documentText = "") {
     }
   }
 
-  // Fallback 3: Text pattern search
+  // Fallback 4: Extract projects dynamically from user action phrases (e.g. "made multiple APIs", "solved bugs")
   if (projects.length === 0) {
-    const projRegex = /(?:project|system|app|website|tool)\s+called\s+([a-zA-Z0-9\s]+)\s+that\s+([^\.\n]+)/gi;
+    const actionRegex = /(?:built|made|developed|created|designed|solved|solve|resolved|implement|implemented|integrated|integrating)\s+([a-zA-Z0-9\s\-]+?)(?=\s+(?:using|with|at|for|in|on|and|but|from|to|during|pvt|ltd|inc|corp|company)\b|\.|\,|$)/gi;
     let match;
-    while ((match = projRegex.exec(combinedText)) !== null) {
-      const pTitle = match[1].trim();
-      const pDesc = `A project that ${match[2].trim()}.`;
-      if (pTitle.length > 2 && pTitle.length < 40 && !invalidKeywords.includes(pTitle.toLowerCase())) {
-        projects.push({ title: pTitle, desc: pDesc, tech: [] });
+    while ((match = actionRegex.exec(combinedText)) !== null) {
+      let target = match[1].trim();
+      if (target.length > 2 && target.length < 50) {
+        let title = target.split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        
+        // Format common keywords cleanly
+        if (title.toLowerCase().includes("api")) {
+          title = "API Development & Integration";
+        } else if (title.toLowerCase().includes("bug")) {
+          title = "Bug Resolution & System Optimization";
+        }
+        
+        const desc = `Successfully designed, implemented, and optimized ${target} in production environments.`;
+        
+        const tags = [];
+        for (const s of standardSkills) {
+          if (desc.toLowerCase().includes(s.toLowerCase())) tags.push(s);
+        }
+        
+        projects.push({
+          title: title,
+          desc: desc,
+          tech: tags.slice(0, 3)
+        });
       }
     }
   }
@@ -636,7 +655,7 @@ export function extractInfo(promptText = "", documentText = "") {
   }
 
   if (experience.length === 0) {
-    const experienceRegex = /(?:work|worked|employed|experience|experiance|role|developer|engineer|designer|manager)\b[\s\S]{1,50}?(?:at|for|in)\s+([a-zA-Z0-9\s\.\-]+?)(?:\s+pvt\s+ltd|\s+ltd|\s+inc|\s+corp|\s+company|\.|\,|$|\n)/i;
+    const experienceRegex = /(?:work|worked|employed|experience|experiance|role|developer|engineer|designer|manager)\b[\s\S]{1,50}?(?:at|for|in)\s+([a-zA-Z0-9\s\.\-]+?)(?=\s+(?:for|and|to|with|who|from|since|during|as|at|in|pvt|ltd|inc|corp|company)\b|\.|\,|$|\n)/i;
     const match = combinedText.match(experienceRegex);
     if (match) {
       const company = match[1].trim();
