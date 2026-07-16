@@ -765,7 +765,7 @@ export default function Dashboard({ onCompile, initialData }) {
     }
   };
 
-  const handleAutoExtract = (pText, dText) => {
+  const handleAutoExtract = (pText, dText, autoOpenModal = false) => {
     const currentPrompt = pText !== undefined ? pText : promptText;
     const currentDoc = dText !== undefined ? dText : documentText;
     
@@ -807,16 +807,11 @@ export default function Dashboard({ onCompile, initialData }) {
       });
     }
 
-    setTimeout(() => {
-      setConfirmModal({
-        isOpen: true,
-        message: "This data has been fetched from your information. Would you like to review and edit the fetched data?",
-        onConfirm: () => {
-          setIsBuildModalOpen(true);
-        },
-        onCancel: null
-      });
-    }, 100);
+    if (autoOpenModal) {
+      setTimeout(() => {
+        setIsBuildModalOpen(true);
+      }, 100);
+    }
   };
 
 
@@ -1744,7 +1739,7 @@ export default function Dashboard({ onCompile, initialData }) {
           confetti({ particleCount: 30, spread: 40, colors: ['#a855f7', '#00e5ff'] });
 
           // Auto extract details immediately and alert/edit
-          handleAutoExtract(promptText, cleanText);
+          handleAutoExtract(promptText, cleanText, true);
         }).catch(err => {
           console.error(err);
           setPdfParsing(false);
@@ -1760,7 +1755,7 @@ export default function Dashboard({ onCompile, initialData }) {
   const handleSaveModalDocument = () => {
     if (modalText.trim()) {
       setDocumentText(modalText.trim());
-      handleAutoExtract(promptText, modalText.trim());
+      handleAutoExtract(promptText, modalText.trim(), true);
     }
     setIsModalOpen(false);
   };
