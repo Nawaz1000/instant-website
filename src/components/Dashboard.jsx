@@ -1955,30 +1955,150 @@ export default function Dashboard({ onCompile, initialData }) {
       setAlertMessage("Please enter a name first.");
       return;
     }
-    const finalSlug = `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'portfolio'}-${Math.random().toString(36).substring(2, 8)}`;
+    
+    let finalSlug = slug.trim().toLowerCase().replace(/[^a-z0-9\-]+/g, '-').replace(/^-+|-+$/g, '');
+    if (!finalSlug) {
+      finalSlug = `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'portfolio'}`;
+    }
 
-    const payload = {
-      ...verifyAndEnhanceData(),
-      slug: finalSlug
-    };
+    // Reserved routes validation check
+    const reservedSlugs = ["admin-panel", "dashboard", "themes", "index.html", "admin", "panel"];
+    if (reservedSlugs.includes(finalSlug)) {
+      setAlertMessage("This URL slug is reserved for system use. Please choose a different link slug.");
+      return;
+    }
+
+    setIsCompiling(true);
+    setCompileLogs([]);
 
     try {
-      // Save payload directly to Firestore under "portfolios" collection
-      await setDoc(doc(db, "portfolios", finalSlug), payload);
+      await addLog("[COMPILER] Initiating portfolio compilation...", 100);
 
-      const finalUrl = window.location.origin + '/' + finalSlug;
+      // Check if slug already exists and belongs to someone else
+      const docRef = doc(db, "portfolios", finalSlug);
+      const docSnap = await getDoc(docRef);
+      let resolvedSlug = finalSlug;
+
+      if (docSnap.exists()) {
+        const existingData = docSnap.data();
+        if (existingData.n && existingData.n.trim().toLowerCase() !== name.trim().toLowerCase()) {
+          await addLog("[DATABASE] Slug collision detected! Appending unique identifier...", 150);
+          const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+          resolvedSlug = `${finalSlug}-${randomSuffix}`;
+          setSlug(resolvedSlug);
+        }
+      }
+
+      await addLog(`[DATABASE] Allocating URL slug: '${resolvedSlug}'`, 150);
+
+      const compiledExperience = experience.map(exp => {
+        let role = exp.title;
+        let company = "";
+        const splitMatch = exp.title.match(/^(.*?)\s+(?:at|@)\s+(.*)$/i);
+        if (splitMatch) {
+          role = splitMatch[1].trim();
+          company = splitMatch[2].trim();
+        }
+        return {
+          year: exp.year,
+          period: exp.year,
+          title: exp.title,
+          role: role,
+          company: company || "Independent",
+          desc: exp.desc
+        };
+      });
+
+      const compiledProjects = projects.map(proj => ({
+        ...proj,
+        tech: proj.tech ? (Array.isArray(proj.tech) ? proj.tech.map(t => t.trim()).filter(Boolean) : proj.tech.split(',').map(t => t.trim()).filter(Boolean)) : []
+      }));
+
+      const userData = {
+        name: name.trim(),
+        title: title.trim(),
+        bio: bio.trim() || "Describe your background in the bio section.",
+        skills: skills,
+        projects: compiledProjects,
+        experience: compiledExperience,
+        contact: contact
+      };
+
+      let payload;
+      const chosenThemeObj = dbCustomThemes.find(t => t.id === selectedTheme);
+
+      if (selectedTheme === "custom_upload" || chosenThemeObj) {
+        const baseHtml = chosenThemeObj ? chosenThemeObj.customHtml : customHtmlContent;
+        await addLog("[COMPILER] Injecting details into custom theme HTML...", 150);
+        let compiledHtml = injectUserDataIntoCustomHtml(baseHtml, userData, "");
+
+        htmlReplacements.forEach(rep => {
+          if (rep.search.trim()) {
+            const escapedSearch = rep.search.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            const regex = new RegExp(escapedSearch, 'g');
+            compiledHtml = compiledHtml.replace(regex, rep.replace);
+          }
+        });
+
+        payload = {
+          th: "custom_html",
+          n: name.trim(),
+          title: title.trim(),
+          bio: userData.bio,
+          skills: userData.skills,
+          experience: userData.experience,
+          projects: userData.projects,
+          contact: userData.contact,
+          customHtml: compiledHtml,
+          rawCustomHtml: baseHtml,
+          replacements: htmlReplacements,
+          slug: resolvedSlug,
+          createdAt: Date.now()
+        };
+      } else {
+        await addLog(`[COMPILER] Preparing selected ${selectedTheme} configuration...`, 150);
+        payload = {
+          th: selectedTheme,
+          n: name.trim(),
+          title: title.trim(),
+          bio: userData.bio,
+          skills: userData.skills,
+          experience: userData.experience,
+          projects: userData.projects,
+          contact: userData.contact,
+          slug: resolvedSlug,
+          createdAt: Date.now()
+        };
+      }
+
+      await addLog("[DATABASE] Storing document in Firestore...", 150);
+      await setDoc(doc(db, "portfolios", resolvedSlug), payload);
+
+      const finalUrl = window.location.origin + '/' + resolvedSlug;
+      await addLog("[DATABASE] Document successfully saved.", 100);
+      await addLog("[COMPILER] Compilation complete!", 100);
 
       setCompiledUrl(finalUrl);
       setCompileSuccess(true);
-      
-      confetti({
-        particleCount: 150,
-        spread: 80,
-        colors: ['#a855f7', '#6366f1', '#00e5ff']
-      });
+      setCompiledPayload(payload);
+
+      setTimeout(() => {
+        setIsCompiling(false);
+        confetti({
+          particleCount: 150,
+          spread: 80,
+          colors: ['#a855f7', '#6366f1', '#00e5ff']
+        });
+        setIsFeedbackModalOpen(true);
+      }, 500);
+
     } catch (err) {
       console.error("Error saving to Firestore:", err);
-      setAlertMessage("Failed to generate portfolio. Please check your network connection or Firebase database configuration.");
+      await addLog(`[ERROR] Compilation failed: ${err.message}`, 100);
+      setTimeout(() => {
+        setIsCompiling(false);
+        setAlertMessage(`Compilation failed: ${err.message}`);
+      }, 1000);
     }
   };
 

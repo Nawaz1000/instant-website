@@ -15,12 +15,13 @@ export default function AdminDashboard({ onBack }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('portfolios'); // 'portfolios', 'visitors', 'themes'
+  const [activeTab, setActiveTab] = useState('portfolios'); // 'portfolios', 'visitors', 'themes', 'feedback'
   
   const [stats, setStats] = useState({ totalHits: 0, uniqueUsers: 0, totalPortfolios: 0 });
   const [portfolios, setPortfolios] = useState([]);
   const [visitorLogs, setVisitorLogs] = useState([]);
   const [publishedThemes, setPublishedThemes] = useState([]);
+  const [feedbackList, setFeedbackList] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // PBKDF2 / SHA256 Hash of admin password "7V7ZgSaQp3ot9v7"
@@ -106,6 +107,14 @@ export default function AdminDashboard({ onBack }) {
         const themesSnap = await getDocs(collection(db, 'app_custom_themes'));
         const themesList = themesSnap.docs.map(doc => doc.data());
 
+        // 5. Fetch feedback / comments left by users
+        const commentsSnap = await getDocs(collection(db, 'comments'));
+        const commentsList = commentsSnap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        commentsList.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
         setStats({
           totalHits: hits,
           uniqueUsers: unique,
@@ -114,6 +123,7 @@ export default function AdminDashboard({ onBack }) {
         setPortfolios(portfolioList);
         setVisitorLogs(aggregatedLogs);
         setPublishedThemes(themesList);
+        setFeedbackList(commentsList);
       } catch (err) {
         console.error("Error fetching admin metrics:", err);
       } finally {
@@ -179,6 +189,17 @@ export default function AdminDashboard({ onBack }) {
     }
   };
 
+  const handleDeleteFeedback = async (id) => {
+    if (window.confirm("Are you sure you want to delete this feedback message?")) {
+      try {
+        await deleteDoc(doc(db, "comments", id));
+        setFeedbackList(prev => prev.filter(f => f.id !== id));
+      } catch (err) {
+        alert("Failed to delete feedback: " + err.message);
+      }
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-[#070814] text-[#f8fafc] flex items-center justify-center px-4 font-outfit">
@@ -201,7 +222,7 @@ export default function AdminDashboard({ onBack }) {
 
           <form onSubmit={handleLogin} className="space-y-4 text-left">
             <div className="space-y-1">
-              <label className="block text-[10px] font-bold text-gray-450 uppercase tracking-widest">Admin Password</label>
+              <label className="block text-[10px] font-bold text-gray-455 uppercase tracking-widest">Admin Password</label>
               <input
                 type="password"
                 placeholder="Enter password..."
@@ -312,7 +333,7 @@ export default function AdminDashboard({ onBack }) {
         </div>
 
         {/* Tab Selection */}
-        <div className="flex gap-6 border-b border-white/5 pb-2">
+        <div className="flex gap-6 border-b border-white/5 pb-2 overflow-x-auto whitespace-nowrap">
           <button
             onClick={() => setActiveTab('portfolios')}
             className={`pb-2 px-1 text-xs font-bold uppercase tracking-wider transition-colors relative ${
@@ -343,6 +364,17 @@ export default function AdminDashboard({ onBack }) {
           >
             Custom Themes Manager
             {activeTab === 'themes' && (
+              <motion.div layoutId="activeTabIndicator" className="absolute bottom-0 left-0 right-0 h-[2px] bg-purple-500" />
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('feedback')}
+            className={`pb-2 px-1 text-xs font-bold uppercase tracking-wider transition-colors relative ${
+              activeTab === 'feedback' ? 'text-white' : 'text-gray-500 hover:text-gray-300'
+            }`}
+          >
+            User Feedback & Reviews
+            {activeTab === 'feedback' && (
               <motion.div layoutId="activeTabIndicator" className="absolute bottom-0 left-0 right-0 h-[2px] bg-purple-500" />
             )}
           </button>
@@ -383,7 +415,7 @@ export default function AdminDashboard({ onBack }) {
                 <div className="text-center py-16 border border-dashed border-white/5 rounded-2xl bg-white/[0.002]">
                   <i className="fa-solid fa-folder-open text-4xl text-gray-650 mb-3"></i>
                   <p className="text-sm text-gray-400 font-bold">No portfolios compiled yet</p>
-                  <p className="text-xs text-gray-550 mt-1">Compiled sites will appear here in real-time.</p>
+                  <p className="text-xs text-gray-555 mt-1">Compiled sites will appear here in real-time.</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -634,6 +666,67 @@ export default function AdminDashboard({ onBack }) {
                   </div>
                 )}
               </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'feedback' && (
+            <motion.div
+              key="feedback"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="bg-white/[0.01] border border-white/5 rounded-3xl p-6 overflow-hidden flex flex-col"
+            >
+              <div className="mb-6 pb-4 border-b border-white/5">
+                <h2 className="text-lg font-bold text-white">User Feedback & Reviews</h2>
+                <p className="text-xs text-gray-455 mt-0.5">Moderate or view ratings and comments left by portfolio creators.</p>
+              </div>
+
+              {loading ? (
+                <div className="text-center py-16 text-purple-400 space-y-3">
+                  <i className="fa-solid fa-spinner fa-spin text-2xl"></i>
+                  <p className="text-xs uppercase tracking-widest opacity-80 font-bold">Loading Feedback...</p>
+                </div>
+              ) : feedbackList.length === 0 ? (
+                <div className="text-center py-16 border border-dashed border-white/5 rounded-2xl bg-white/[0.002]">
+                  <i className="fa-solid fa-comment-slash text-4xl text-gray-650 mb-3"></i>
+                  <p className="text-sm text-gray-400 font-bold">No feedback submitted yet</p>
+                  <p className="text-xs text-gray-550 mt-1">Comments submitted from build modals will display here.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {feedbackList.map((f) => (
+                    <div key={f.id} className="bg-white/[0.02] border border-white/5 rounded-2xl p-5 flex flex-col justify-between space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="text-sm font-bold text-white">{f.name || 'Anonymous User'}</h4>
+                            <div className="flex gap-1 text-amber-400 text-xs mt-1">
+                              {Array.from({ length: 5 }).map((_, i) => (
+                                <i key={i} className={`fa-solid fa-star ${i < (f.rating || 5) ? 'text-amber-400' : 'text-gray-700'}`}></i>
+                              ))}
+                            </div>
+                          </div>
+                          <span className="text-[10px] text-gray-500 font-mono">
+                            {f.timestamp ? new Date(f.timestamp).toLocaleDateString() : 'N/A'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-300 leading-relaxed italic">
+                          "{f.comment || 'No comment provided.'}"
+                        </p>
+                      </div>
+                      <div className="flex justify-end">
+                        <button
+                          onClick={() => handleDeleteFeedback(f.id)}
+                          className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg text-[10px] font-bold text-red-400 transition-all active:scale-95"
+                        >
+                          Delete Review
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
