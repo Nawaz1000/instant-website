@@ -17,7 +17,7 @@ export default function AdminDashboard({ onBack }) {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('portfolios'); // 'portfolios', 'visitors', 'themes', 'feedback'
   
-  const [stats, setStats] = useState({ totalHits: 0, uniqueUsers: 0, totalPortfolios: 0 });
+  const [stats, setStats] = useState({ totalHits: 0, uniqueUsers: 0, totalPortfolios: 0, todayHits: 0 });
   const [portfolios, setPortfolios] = useState([]);
   const [visitorLogs, setVisitorLogs] = useState([]);
   const [publishedThemes, setPublishedThemes] = useState([]);
@@ -75,7 +75,15 @@ export default function AdminDashboard({ onBack }) {
         const rawLogs = logsSnap.docs.map(doc => doc.data());
         const ipMap = {};
         
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const todayStartTime = todayStart.getTime();
+        let todayHits = 0;
+        
         rawLogs.forEach(log => {
+          if (log.timestamp && log.timestamp >= todayStartTime) {
+            todayHits++;
+          }
           const ip = log.ip || 'Unknown';
           if (!ipMap[ip]) {
             ipMap[ip] = {
@@ -118,7 +126,8 @@ export default function AdminDashboard({ onBack }) {
         setStats({
           totalHits: hits,
           uniqueUsers: unique,
-          totalPortfolios: portfolioList.length
+          totalPortfolios: portfolioList.length,
+          todayHits: todayHits
         });
         setPortfolios(portfolioList);
         setVisitorLogs(aggregatedLogs);
@@ -269,7 +278,7 @@ export default function AdminDashboard({ onBack }) {
       <div className="absolute inset-0 z-0 opacity-20 pointer-events-none w-full h-full bg-gradient-to-b from-purple-900/30 via-transparent to-transparent" />
       
       {/* Nav */}
-      <nav className="relative z-10 border-b border-white/5 bg-[#070814]/80 backdrop-blur-xl px-6 md:px-[8%] py-5 flex justify-between items-center">
+      <nav className="relative z-10 border-b border-white/5 bg-[#070814]/80 backdrop-blur-xl px-4 sm:px-6 md:px-[8%] py-4 sm:py-5 flex flex-wrap sm:flex-nowrap justify-between items-center gap-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
             <i className="fa-solid fa-chart-line text-xs text-white"></i>
@@ -285,50 +294,64 @@ export default function AdminDashboard({ onBack }) {
       </nav>
 
       {/* Main content container */}
-      <main className="relative z-10 flex-1 max-w-[1400px] w-full mx-auto px-6 md:px-12 py-10 space-y-10">
+      <main className="relative z-10 flex-1 max-w-[1400px] w-full mx-auto px-4 sm:px-6 md:px-12 py-6 sm:py-10 space-y-8 sm:space-y-10">
         
         {/* KPI Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <motion.div 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
-            className="bg-white/[0.02] border border-white/5 rounded-3xl p-6 relative overflow-hidden"
+            className="bg-white/[0.02] border border-white/5 rounded-3xl p-5 sm:p-6 relative overflow-hidden"
           >
-            <div className="absolute -right-4 -bottom-4 opacity-5 text-purple-400 text-7xl font-bold">
+            <div className="absolute -right-4 -bottom-4 opacity-5 text-purple-400 text-6xl sm:text-7xl font-bold">
               <i className="fa-solid fa-eye"></i>
             </div>
-            <p className="text-[10px] font-bold text-gray-450 uppercase tracking-widest mb-1">Total Hits / Pageviews</p>
-            <h3 className="text-3xl font-extrabold text-white">{loading ? '...' : stats.totalHits.toLocaleString()}</h3>
-            <p className="text-[10px] text-gray-500 mt-2 font-medium">All visits registered in compiler database</p>
+            <p className="text-[10px] font-bold text-gray-450 uppercase tracking-widest mb-1">Total Hits</p>
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-white">{loading ? '...' : stats.totalHits.toLocaleString()}</h3>
+            <p className="text-[10px] text-gray-500 mt-2 font-medium">All visits registered</p>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08 }}
+            className="bg-white/[0.02] border border-white/5 rounded-3xl p-5 sm:p-6 relative overflow-hidden"
+          >
+            <div className="absolute -right-4 -bottom-4 opacity-5 text-green-400 text-6xl sm:text-7xl font-bold">
+              <i className="fa-solid fa-chart-bar"></i>
+            </div>
+            <p className="text-[10px] font-bold text-gray-450 uppercase tracking-widest mb-1">Today's Hits</p>
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-green-400">{loading ? '...' : stats.todayHits.toLocaleString()}</h3>
+            <p className="text-[10px] text-gray-500 mt-2 font-medium">Pageviews since midnight</p>
           </motion.div>
 
           <motion.div 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white/[0.02] border border-white/5 rounded-3xl p-6 relative overflow-hidden"
+            className="bg-white/[0.02] border border-white/5 rounded-3xl p-5 sm:p-6 relative overflow-hidden"
           >
-            <div className="absolute -right-4 -bottom-4 opacity-5 text-[#00e5ff] text-7xl font-bold">
+            <div className="absolute -right-4 -bottom-4 opacity-5 text-[#00e5ff] text-6xl sm:text-7xl font-bold">
               <i className="fa-solid fa-users"></i>
             </div>
             <p className="text-[10px] font-bold text-gray-450 uppercase tracking-widest mb-1">Unique Visitors</p>
-            <h3 className="text-3xl font-extrabold text-[#00e5ff]">{loading ? '...' : stats.uniqueUsers.toLocaleString()}</h3>
-            <p className="text-[10px] text-gray-500 mt-2 font-medium">Unique browser fingerprints captured</p>
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-[#00e5ff]">{loading ? '...' : stats.uniqueUsers.toLocaleString()}</h3>
+            <p className="text-[10px] text-gray-500 mt-2 font-medium">Unique browser fingerprints</p>
           </motion.div>
 
           <motion.div 
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="bg-white/[0.02] border border-white/5 rounded-3xl p-6 relative overflow-hidden"
+            className="bg-white/[0.02] border border-white/5 rounded-3xl p-5 sm:p-6 relative overflow-hidden"
           >
-            <div className="absolute -right-4 -bottom-4 opacity-5 text-indigo-400 text-7xl font-bold">
+            <div className="absolute -right-4 -bottom-4 opacity-5 text-indigo-400 text-6xl sm:text-7xl font-bold">
               <i className="fa-solid fa-briefcase"></i>
             </div>
             <p className="text-[10px] font-bold text-gray-455 uppercase tracking-widest mb-1">Portfolios Built</p>
-            <h3 className="text-3xl font-extrabold text-indigo-400">{loading ? '...' : stats.totalPortfolios.toLocaleString()}</h3>
-            <p className="text-[10px] text-gray-500 mt-2 font-medium">Active hosted portfolios in Firestore</p>
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-indigo-400">{loading ? '...' : stats.totalPortfolios.toLocaleString()}</h3>
+            <p className="text-[10px] text-gray-500 mt-2 font-medium">Active hosted portfolios</p>
           </motion.div>
         </div>
 
@@ -388,9 +411,9 @@ export default function AdminDashboard({ onBack }) {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="bg-white/[0.01] border border-white/5 rounded-3xl p-6 overflow-hidden flex flex-col"
+              className="bg-white/[0.01] border border-white/5 rounded-3xl p-4 sm:p-6 overflow-hidden flex flex-col"
             >
-              <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/5">
+              <div className="flex flex-wrap sm:flex-nowrap justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-white/5">
                 <div>
                   <h2 className="text-lg font-bold text-white">Active Hosted Portfolios</h2>
                   <p className="text-xs text-gray-455 mt-0.5">Explore, visit, or manage user-built websites.</p>
@@ -460,12 +483,12 @@ export default function AdminDashboard({ onBack }) {
                               : 'Prior to v2.0'
                             }
                           </td>
-                          <td className="py-4 px-4 text-right space-x-3 shrink-0">
+                          <td className="py-4 px-4 text-right flex flex-col sm:flex-row justify-end gap-2 shrink-0">
                             <a 
                               href={window.location.origin + '/' + (portfolio.slug || portfolio.id)} 
                               target="_blank" 
                               rel="noreferrer"
-                              className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-[10px] font-bold text-white transition-all inline-block active:scale-95"
+                              className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-[10px] font-bold text-white transition-all inline-block text-center active:scale-95"
                             >
                               Visit Site
                             </a>
@@ -566,7 +589,7 @@ export default function AdminDashboard({ onBack }) {
               className="space-y-8"
             >
               {/* Custom portfolios list */}
-              <div className="bg-white/[0.01] border border-white/5 rounded-3xl p-6 overflow-hidden flex flex-col">
+              <div className="bg-white/[0.01] border border-white/5 rounded-3xl p-4 sm:p-6 overflow-hidden flex flex-col">
                 <div className="mb-6 pb-4 border-b border-white/5">
                   <h2 className="text-lg font-bold text-white">User-Created Custom Themes</h2>
                   <p className="text-xs text-gray-455 mt-0.5">Copy custom HTML code or publish them as dynamic themes in the app list.</p>
@@ -635,7 +658,7 @@ export default function AdminDashboard({ onBack }) {
               </div>
 
               {/* Published custom templates */}
-              <div className="bg-white/[0.01] border border-white/5 rounded-3xl p-6 overflow-hidden flex flex-col">
+              <div className="bg-white/[0.01] border border-white/5 rounded-3xl p-4 sm:p-6 overflow-hidden flex flex-col">
                 <div className="mb-6 pb-4 border-b border-white/5">
                   <h2 className="text-lg font-bold text-white">Dynamic Templates in Main App</h2>
                   <p className="text-xs text-gray-455 mt-0.5">Manage themes currently live and selectable in the builder theme list.</p>
